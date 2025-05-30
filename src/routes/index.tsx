@@ -8,6 +8,14 @@ import { AdminNavLink, navLink } from "../components/layouts/Navlink";
 
 import PrivateRoute from "./PrivateRoute";
 import Hello from "../components/Hello";
+import CategoryList from "../components/category/CategoryList";
+import AddCategoryPage from "../components/category/AddCategory";
+import ProductList from "../components/product/ProductList";
+import ProductDetails from "../components/product/productDetailss";
+import AddMaterial from "../components/material/AddMaterial";
+import AddProduct from "../components/product/AddProduct";
+
+
 
 const RouterProvider: React.FC = () => {
   return (
@@ -46,12 +54,13 @@ const RouterProvider: React.FC = () => {
             element={<DashboardLayout navLink={AdminNavLink} />}
           >
             <Route index element={<AdminDashboard />} />
-            <Route path="add-category" element={<Hello />} />
-            <Route path="category-list" element={<Hello />} />
-            <Route path="category-details" element={<Hello />} />
-            <Route path="shop-list" element={<Hello />} />
-            <Route path="booked-list" element={<Hello />} />
-            <Route path="book-list/:id" element={<Hello />} />
+            <Route path="add-category" element={<AddCategoryPage />} />
+            <Route path="category-list" element={<CategoryList />} />
+            <Route path="add-product" element={<AddProduct />} />
+            <Route path="product-list" element={<ProductList />} />
+            <Route path="product-list/:id" element={<ProductDetails />} />
+            <Route path="add-material" element={<AddMaterial />} />
+            {/* <Route path="book-list/:id" element={<ProductDetails/>} /> */}
             <Route path="add-location" element={<UnderConstruction name="Add Location" />} />
             <Route path="all-location" element={<UnderConstruction name="All Locations" />} />
             <Route path="add-price" element={<Hello />} />

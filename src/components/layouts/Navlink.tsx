@@ -140,22 +140,34 @@ export const AdminNavLink = [
   },
   
   {
-    name: "Shop List",
+    name: "Product",
     href: "#",
     icon: FaShop,
     subItems: [
+
+      {
+        name: "Add Product",
+        href: "/admin/add-product",
+        icon: GoPlus,
+
+      },
       {
         
-          name: "Shop List",
-          href: "/admin/shop-list",
+          name: "Product List",
+          href: "/admin/product-list",
           icon: FaShop,
       },
       
       {
-        name: 'Booked List',
-        href: '/admin/booked-list',
-        icon: CiFolderOn,
+        name:"Add Material",
+        href: '/admin/add-material',
+        icon: GoPlus
       },
+      {
+        name:"Material List",
+        href:'/admin/material-list',
+        icon: CiFolderOn,
+      }
 
     ]
   },

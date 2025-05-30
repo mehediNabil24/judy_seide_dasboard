@@ -10,55 +10,28 @@ import {
   Menu,
 } from "antd";
 import { SearchOutlined, FilterOutlined, DownOutlined } from "@ant-design/icons";
-import { useGetRecentShopQuery } from "../../redux/api/shop/shopApi";
+import { useGetAllOrdersQuery } from "../../redux/api/order/orderApi";
 
 const { Title } = Typography;
 
-type Order = {
-  id: string;
-  orderTime: string;
-  customerName: string;
-  method: string;
-  amount: string;
-  status: string;
-};
-
 const RecentOrderList: React.FC = () => {
-  const { data: apiOrders = [], isLoading, isError } = useGetRecentShopQuery({});
-  const [orders, setOrders] = useState<Order[]>([]);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 9;
+  const pageSize = 10; // match with backend default
+  const [sortField] = useState("createdAt");
 
-  useEffect(() => {
-    if (apiOrders?.data?.length > 0) {
-      const mappedOrders: Order[] = apiOrders.data.map((order: any, index: number) => {
-        return {
-          id: order.id || index.toString(),
-          orderTime: order.createdAt?.split("T")[0] || "N/A",
-          customerName: order.name || "Unknown Customer",
-          method: "Card", // Static as per image
-          amount: "$" + (order.amount || 1234).toLocaleString(),
-          status: order.status || "Processing",
-        };
-      });
-      setOrders(mappedOrders);
-    }
-  }, [apiOrders]);
+  // Query with pagination, sorting, and search
+  const { data, isLoading, isError } = useGetAllOrdersQuery({
+    searchTerm: searchText,
+    page: currentPage,
+    limit: pageSize,
+    sort: sortField,
+  });
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-    setCurrentPage(1);
-  };
+  console.log('RecentOrderList data:', data);
 
-  const filteredOrders = orders.filter((order) =>
-    order.customerName.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const orders = data?.Data?.data || [];
+  const total = data?.Data?.meta?.total || 0;
 
   const statusColors: { [key: string]: string } = {
     Processing: "#ADD8E6",
@@ -79,8 +52,8 @@ const RecentOrderList: React.FC = () => {
     },
     {
       title: "Customer Name",
-      dataIndex: "customerName",
-      key: "customerName",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Method",
@@ -154,6 +127,16 @@ const RecentOrderList: React.FC = () => {
     },
   ];
 
+  const transformedOrders = orders.map((order: any, index: number) => ({
+    key: order.id || index.toString(),
+    id: order.id,
+    orderTime: order.orderTime?.split("T")[0] || "N/A",
+    email: order?.customer?.name || "No Email",
+    method: order.method || "Unknown",
+    amount: `$${(order.amount || 0).toLocaleString()}`,
+    status: order.status || "Processing",
+  }));
+
   return (
     <div className="bg-white p-6 rounded shadow-md w-full">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
@@ -165,7 +148,10 @@ const RecentOrderList: React.FC = () => {
             placeholder="Search orders..."
             prefix={<SearchOutlined />}
             value={searchText}
-            onChange={handleSearch}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              setCurrentPage(1); // Reset page on new search
+            }}
             allowClear
             className="w-full sm:w-64"
           />
@@ -183,7 +169,7 @@ const RecentOrderList: React.FC = () => {
       ) : (
         <>
           <Table
-            dataSource={paginatedOrders}
+            dataSource={transformedOrders}
             columns={columns}
             pagination={false}
             rowKey="id"
@@ -194,17 +180,13 @@ const RecentOrderList: React.FC = () => {
 
           <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
             <p>
-              Showing{" "}
-              {paginatedOrders.length > 0
-                ? (currentPage - 1) * pageSize + 1
-                : 0}{" "}
-              - {(currentPage - 1) * pageSize + paginatedOrders.length} of{" "}
-              {filteredOrders.length}
+              Showing {(currentPage - 1) * pageSize + 1} -{" "}
+              {(currentPage - 1) * pageSize + transformedOrders.length} of {total}
             </p>
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={filteredOrders.length}
+              total={total}
               onChange={setCurrentPage}
               showSizeChanger={false}
             />

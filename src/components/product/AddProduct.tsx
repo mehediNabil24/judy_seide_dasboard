@@ -11,36 +11,36 @@ import {
   Upload,
   message
 } from "antd"
-import { UploadOutlined, InboxOutlined } from "@ant-design/icons"
+import {  InboxOutlined } from "@ant-design/icons"
 import type { UploadFile, UploadProps } from "antd"
 import { useGetCategoriesQuery } from "../../redux/api/category/categoryApi"
 import { useGetAllMaterialsQuery } from "../../redux/api/material/materialApi"
 import { useAddProductMutation } from "../../redux/api/product/productApi"
 
-interface ProductFormData {
+interface FormValues {
   name: string
   price: number
   description: string
-  size: string
+  size?: string
   quantity: number
-  tags: string[]
   categoryId: string
   materialId: string
-  images: string[]
-  published: boolean
+  published?: boolean
+  tags?: string
 }
 
 const AddProductPage: React.FC = () => {
-  const [form] = Form.useForm()
+  const [form] = Form.useForm<FormValues>()
   const [fileList, setFileList] = useState<UploadFile[]>([])
-  const [addProduct, { isLoading: addingProduct }] = useAddProductMutation()
   const [previewImages, setPreviewImages] = useState<string[]>([])
 
+  const [addProduct, { isLoading: addingProduct }] = useAddProductMutation()
+
   const { data: categorie, isLoading: categoriesLoading } = useGetCategoriesQuery({})
-  const categories = categorie?.data?.data
+  const categories = categorie?.data?.data as { id: string; name: string }[] || []
 
   const { data: material, isLoading: materialsLoading } = useGetAllMaterialsQuery({})
-  const materials = material?.data?.data
+  const materials = material?.data?.data as { id: string; name: string }[] || []
 
   const handleCancel = () => {
     form.resetFields()
@@ -48,20 +48,40 @@ const AddProductPage: React.FC = () => {
     setPreviewImages([])
   }
 
-  const handleSubmit = async (values: any) => {
-    try {
-      const productData: ProductFormData = {
-        ...values,
-        tags: values.tags ? values.tags.split(",").map((tag: string) => tag.trim()) : [],
-        images: fileList.map((file) => file.url || ""),
-      }
+  const handleSubmit = async (values: FormValues) => {
+    if (fileList.length === 0) {
+      message.error("Please upload at least one image.")
+      return
+    }
 
-      await addProduct(productData).unwrap()
+    try {
+      const formData = new FormData()
+      formData.append("name", values.name)
+      formData.append("price", values.price.toString())
+      formData.append("description", values.description)
+      formData.append("size", values.size || "")
+      formData.append("quantity", values.quantity.toString())
+      formData.append("categoryId", values.categoryId)
+      formData.append("materialId", values.materialId)
+      formData.append("published", values.published ? "true" : "false")
+
+      const tags = values.tags
+        ? values.tags.split(",").map((tag) => tag.trim())
+        : []
+      tags.forEach((tag) => formData.append("tags[]", tag))
+
+      fileList.forEach((file) => {
+        if (file.originFileObj) {
+          formData.append("images", file.originFileObj)
+        }
+      })
+
+      await addProduct(formData).unwrap()
       message.success("Product added successfully!")
       handleCancel()
     } catch (error) {
-      message.error("Failed to add product")
       console.error(error)
+      message.error("Failed to add product")
     }
   }
 
@@ -82,27 +102,24 @@ const AddProductPage: React.FC = () => {
         return Upload.LIST_IGNORE
       }
 
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        const newFile = {
-          uid: file.uid,
-          name: file.name,
-          status: "done",
-          url: reader.result as string,
-        } as UploadFile
-
-        setFileList((prev) => [...prev, newFile])
-        setPreviewImages((prev) => [...prev, reader.result as string])
+      const newFile: UploadFile = {
+        uid: file.uid,
+        name: file.name,
+        status: "done",
+        originFileObj: file,
+        url: URL.createObjectURL(file),
       }
+
+      setFileList((prev) => [...prev, newFile])
+      setPreviewImages((prev) => [...prev, newFile.url!])
 
       return false
     },
     onRemove: (file) => {
-      const newList = fileList.filter((f) => f.uid !== file.uid)
-      const newPreviewList = previewImages.filter((_, i) => fileList[i].uid !== file.uid)
-      setFileList(newList)
-      setPreviewImages(newPreviewList)
+      setFileList((prev) => prev.filter((f) => f.uid !== file.uid))
+      setPreviewImages((prev) =>
+        prev.filter((_, i) => fileList[i].uid !== file.uid)
+      )
     },
     customRequest: ({ onSuccess }) => {
       if (onSuccess) {
@@ -122,7 +139,7 @@ const AddProductPage: React.FC = () => {
           </button>
         </div>
 
-        <Form form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
+        <Form<FormValues> form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
           <div className="grid grid-cols-2 gap-6 mb-4">
             <Form.Item label="Category" name="categoryId" rules={[{ required: true }]}>
               <Select
@@ -130,7 +147,7 @@ const AddProductPage: React.FC = () => {
                 loading={categoriesLoading}
                 className="w-full h-10 border border-[#FF9B44] rounded"
               >
-                {categories?.map((category: any) => (
+                {categories.map((category) => (
                   <Select.Option key={category.id} value={category.id}>
                     {category.name}
                   </Select.Option>
@@ -144,7 +161,7 @@ const AddProductPage: React.FC = () => {
                 loading={materialsLoading}
                 className="w-full h-10 border border-[#FF9B44] rounded"
               >
-                {materials?.map((material: any) => (
+                {materials.map((material) => (
                   <Select.Option key={material.id} value={material.id}>
                     {material.name}
                   </Select.Option>
@@ -177,7 +194,7 @@ const AddProductPage: React.FC = () => {
                   <p className="text-gray-500 text-sm">Drop files or click to browse</p>
                   <p className="text-gray-400 text-xs">JPG, PNG | Max 25MB each</p>
                 </Upload.Dragger>
-                {/* Preview thumbnails */}
+
                 <div className="flex flex-wrap gap-2 mt-4">
                   {previewImages.map((img, index) => (
                     <img
@@ -214,7 +231,12 @@ const AddProductPage: React.FC = () => {
 
           <div className="flex justify-center gap-4 mt-8">
             <Button onClick={handleCancel}>Cancel</Button>
-            <Button type="primary" htmlType="submit" loading={addingProduct} className="bg-[#FF9B44] hover:bg-[#ff8a29] border-none text-white">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={addingProduct}
+              className="bg-[#FF9B44] hover:bg-[#ff8a29] border-none text-white"
+            >
               Add Product
             </Button>
           </div>

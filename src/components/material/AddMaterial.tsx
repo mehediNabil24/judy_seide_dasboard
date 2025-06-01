@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { useAddMaterialMutation } from '../../redux/api/material/materialApi';
-
+import { toast } from 'sonner';
 
 const AddMaterial: React.FC = () => {
-  const [name, setName] = useState('18k gold');
+  const [name, setName] = useState('');
   const [addMaterial, { isLoading }] = useAddMaterialMutation();
 
   const handleAddMaterial = async () => {
     if (!name.trim()) return;
 
     try {
-      await addMaterial(name).unwrap();
-      setName(''); // clear input on success
-      alert('Material added successfully!');
+      await addMaterial({ name }).unwrap(); // 👈 Send as JSON
+      setName('');
+      toast.success('Material added successfully!');
     } catch (error) {
-      console.error('Failed to add material:', error);
-      alert('Failed to add material');
+      toast.error(`Failed to add material: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
     }
   };
 
   const handleCancel = () => {
-    setName('18k gold');
+    setName('');
   };
 
   return (
@@ -50,7 +50,7 @@ const AddMaterial: React.FC = () => {
           disabled={isLoading}
           className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 text-sm rounded-sm"
         >
-          Add Material
+          {isLoading ? 'Adding...' : 'Add Material'}
         </button>
       </div>
     </div>

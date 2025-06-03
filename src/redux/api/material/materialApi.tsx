@@ -23,22 +23,22 @@ const materialApi = baseApi.injectEndpoints({
     }),
 
     // Delete Category API
-    deleteCategory: builder.mutation({
+    deleteMaterial: builder.mutation({
       query: (id) => ({
-        url: `/category/delete-category/${id}`,
+        url: `/materials/delete-material/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Categories'], 
+      invalidatesTags: ['Materials'], 
     }),
 
     // Update Category API (PATCH)
-    updateCategory: builder.mutation({
+    updateMaterial: builder.mutation({
       query: ({ id, updatedData }) => ({
-        url: `/category/update-category/${id}`, // Adjust your actual update endpoint
+        url: `/materials/update-material/${id}`, // Adjust your actual update endpoint
         method: 'PATCH',
         body: updatedData,
       }),
-      invalidatesTags: ['Categories'], // Invalidate the 'Categories' tag to refetch data
+      invalidatesTags: ['Materials'], // Invalidate the 'Categories' tag to refetch data
     }),
   }),
   overrideExisting: false,
@@ -47,7 +47,9 @@ const materialApi = baseApi.injectEndpoints({
 
 export const {
     useAddMaterialMutation,
-    useGetAllMaterialsQuery
+    useGetAllMaterialsQuery,
+    useDeleteMaterialMutation,
+    useUpdateMaterialMutation
 
  // Export the update mutation hook
 } = materialApi;

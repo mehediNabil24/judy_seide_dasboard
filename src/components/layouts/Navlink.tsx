@@ -1,5 +1,5 @@
-import { CiFolderOn} from 'react-icons/ci';
-import { FaUsers } from 'react-icons/fa';
+import { CiFolderOn, CiSettings} from 'react-icons/ci';
+import { FaUser, FaUsers } from 'react-icons/fa';
 import { FaShop, FaUserGroup } from 'react-icons/fa6';
 import { FiBox } from 'react-icons/fi';
 import { GiNewspaper } from 'react-icons/gi';
@@ -189,14 +189,14 @@ export const AdminNavLink = [
   //   ],
   // },
   {
-    name: "Pricing",
+    name: "Customer",
     href: "#",
-    icon: IoWalletOutline,
+    icon: FaUser,
     subItems: [
       {
-        name: "Add Price",
-        href: "/admin/add-price",
-        icon: GoPlus,
+        name: "Customer List",
+        href: "/admin/customer-list",
+        icon: FaUsers,
       },
       {
         name: "All Price",
@@ -204,6 +204,11 @@ export const AdminNavLink = [
         icon: IoPeopleOutline,
       },
     ],
+  },
+  {
+    name:"Orders",
+    href: "/admin/order-list",
+    icon: MdOutlinePayments
   },
   {
     name: "Blog",
@@ -214,14 +219,20 @@ export const AdminNavLink = [
       { name: "All Blogs", href: "/admin/all-blog", icon: GiNewspaper },
     ],
   },
-  // {
-  //   name: "Review",
-  //   href: "/admin/reviews",
-  //   icon: FaUsers,
-  // },
+  {
+    name: "Review",
+    href: "/admin/reviews",
+    icon: FaUsers,
+  },
   {
     name:"Shop Payment",
     href: "/admin/shop-payment",
     icon: MdOutlinePayments
+  },
+  {
+    name:"Profile",
+    href: "/admin/admin-profile",
+    icon: CiSettings
   }
+  
 ];

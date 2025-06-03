@@ -14,6 +14,13 @@ import ProductList from "../components/product/ProductList";
 import ProductDetails from "../components/product/productDetailss";
 import AddMaterial from "../components/material/AddMaterial";
 import AddProduct from "../components/product/AddProduct";
+import MaterialList from "../components/materialList/MaterialList";
+import CustomerList from "../components/customer/CustomerList";
+import OrderList from "../components/orders/OrderList";
+import ReviewList from "../components/review/ReviewList";
+import AdminProfile from "../components/admin/AdminProfile";
+import BlogList from "../components/blog/BlogList";
+import AddBlog from "../components/blog/AddBlog";
 
 
 
@@ -61,15 +68,14 @@ const RouterProvider: React.FC = () => {
             <Route path="product-list/:id" element={<ProductDetails />} />
             <Route path="add-material" element={<AddMaterial />} />
             {/* <Route path="book-list/:id" element={<ProductDetails/>} /> */}
-            <Route path="add-location" element={<UnderConstruction name="Add Location" />} />
-            <Route path="all-location" element={<UnderConstruction name="All Locations" />} />
-            <Route path="add-price" element={<Hello />} />
-            <Route path="all-price" element={<Hello/>} />
-            <Route path="add-blog" element={<Hello />} />
-            <Route path="all-blog" element={<Hello />} />
+            <Route path="material-list" element={<MaterialList />} />
+            <Route path="customer-list" element={<CustomerList />} />
+            <Route path="order-list" element={<OrderList />} />
+            <Route path="add-blog" element={<AddBlog />} />
+            <Route path="all-blog" element={<BlogList />} />
             <Route path="blog-details" element={<Hello />} />
-            <Route path="reviews" element={<Hello />} />
-            <Route path="shop-payment" element={<Hello />} />
+            <Route path="reviews" element={<ReviewList />} />
+            <Route path="admin-profile" element={<AdminProfile />} />
           </Route>
         </Route>
       </Routes>

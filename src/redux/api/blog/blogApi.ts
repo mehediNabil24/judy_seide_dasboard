@@ -12,13 +12,17 @@ const blogApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Blogs'], // invalidate blog list
     }),
-    getBlogs: builder.query({
+
+    //
+    getAdminBlogs: builder.query({
       query: ({ page, limit }) => ({
         url: `/blog/get-all-blogs?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: ['Blogs'], // provide blog list tag
     }),
+
+    // 
     getUserBlog: builder.query({
       query: (id) => {
         const token = Cookies.get("token");
@@ -56,7 +60,7 @@ const blogApi = baseApi.injectEndpoints({
 export const {
   useAddBlogMutation,
   useGetUserBlogQuery,
-  useGetBlogsQuery,
+  useGetAdminBlogsQuery,
   useUpdateBlogMutation,
   useDeleteBlogMutation,
 } = blogApi;

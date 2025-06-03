@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   Input,
@@ -30,7 +30,7 @@ const CategoryList = () => {
   const [deleteCategory] = useDeleteCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
 
-  const allCategories = data?.data?.data || [];
+  const allCategories = useMemo(() => data?.data?.data || [], [data]);
   const meta = data?.data?.meta;
 
   const [filteredCategories, setFilteredCategories] = useState(allCategories);
@@ -91,9 +91,7 @@ const CategoryList = () => {
         published: values.published,
       };
 
-      // Simulate file upload and get URL
       if (imageFile) {
-        // Replace this with real upload logic if needed
         const uploadedImageUrl = URL.createObjectURL(imageFile);
         formData.imageUrl = uploadedImageUrl;
       }
@@ -211,7 +209,9 @@ const CategoryList = () => {
         }}
         onOk={handleUpdate}
         okText="Update"
-        okButtonProps={{ style: { backgroundColor: "#FFA500", borderColor: "#FFA500" } }}
+        okButtonProps={{
+          style: { backgroundColor: "#FFA500", borderColor: "#FFA500" },
+        }}
         width={600}
       >
         <Form layout="vertical" form={form}>
@@ -243,11 +243,7 @@ const CategoryList = () => {
             )}
           </Form.Item>
 
-          <Form.Item
-            label="Published"
-            name="published"
-            valuePropName="checked"
-          >
+          <Form.Item label="Published" name="published" valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>

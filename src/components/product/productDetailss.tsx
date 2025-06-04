@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { Card, Input, Switch, Image, Button } from "antd";
-import { CheckOutlined } from "@ant-design/icons";
+import { Card, Input, Image, Button } from "antd";
+// import { CheckOutlined } from "@ant-design/icons";
 import { useGetSingleProductQuery } from "../../redux/api/product/productApi";
 
 

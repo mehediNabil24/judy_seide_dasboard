@@ -61,7 +61,7 @@ export default function SignInPage() {
         const userRole = response.data.user.role;
         if (userRole === "ADMIN") {
           navigate("/admin");
-        } else if (userRole === "BUSINESS") {
+        } else if (userRole === "USER") {
           navigate("/dashboard");
         } 
       }

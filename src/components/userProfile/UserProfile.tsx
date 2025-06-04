@@ -8,7 +8,7 @@ import { useGetProfileQuery, useUpdateProfileMutation,  } from "../../redux/api/
 import type { UploadFile } from "antd/es/upload/interface"
 import { toast } from "sonner"
 
-const { Text } = Typography
+const {  Text } = Typography
 
 interface ProfileData {
   name: string
@@ -18,17 +18,17 @@ interface ProfileData {
   address: string
 }
 
-const AdminProfile: React.FC = () => {
+const UserProfile: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [form] = Form.useForm()
   const [fileList, setFileList] = useState<UploadFile[]>([])
 
   // Using the provided query hook to fetch profile data
-  const { data } = useGetProfileQuery({})
+  const { data, } = useGetProfileQuery({})
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
 
-  console.log('data', updateProfile)
+  // console.log('data', updateProfile)
 
   const profileData: ProfileData = data?.Data || {
     name: "",
@@ -141,7 +141,7 @@ const AdminProfile: React.FC = () => {
 
       <div style={{ borderTop: "2px solid #f0f0f0", paddingTop: "30px" }}>
         <Form layout="vertical">
-          <Form.Item label={<span style={{ fontWeight: "normal", fontSize: "20px" }}>Admin Name</span>}>
+          <Form.Item label={<span style={{ fontWeight: "normal", fontSize: "20px" }}>Name</span>}>
             <Input
               value={profileData.name}
               style={{
@@ -405,4 +405,4 @@ const AdminProfile: React.FC = () => {
   )
 }
 
-export default AdminProfile
+export default UserProfile

@@ -6,7 +6,7 @@ import { GiNewspaper } from 'react-icons/gi';
 import { GoPlus, GoPlusCircle } from 'react-icons/go';
 
 import { ImScissors } from 'react-icons/im';
-import { IoPeopleOutline, IoWalletOutline } from 'react-icons/io5';
+import { IoPeopleOutline } from 'react-icons/io5';
 import { LuCalendarDays } from 'react-icons/lu';
 import {  MdOutlineCategory, MdOutlinePayments } from 'react-icons/md';
 import { PiNewspaperThin } from 'react-icons/pi';
@@ -16,14 +16,14 @@ import { RiDashboardFill } from 'react-icons/ri';
 
 export const navLink = [
   {
-    name: "Dashboard",
+    name: "My Profile",
     href: "/dashboard",
     icon: RiDashboardFill,
   },
 
   {
-    name: "Booking List",
-    href: "/dashboard/booking-list",
+    name: "Order History",
+    href: "/dashboard/order-list",
     icon: LuCalendarDays,
   },
 

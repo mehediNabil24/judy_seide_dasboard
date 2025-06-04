@@ -14,6 +14,27 @@ const orderApi = baseApi.injectEndpoints({
     }),
 
 
+    //get user order 
+    getUserOrders: builder.query({
+      query: (id) => ({
+        url: `/order/get-user-orders/${id}`,
+        method: "GET",
+      }),
+      providesTags: ['Orders'], 
+    }),
+
+
+    // order deatils api
+    getUserOrderDetils: builder.query({
+      query: (id) => ({
+        url: `/order/my-orders/${id}`,
+        method: "GET",
+      }),
+      providesTags: ['Orders'], 
+    }),
+
+
+
 
 
     // Update Category API (PATCH)
@@ -33,6 +54,8 @@ const orderApi = baseApi.injectEndpoints({
 export const {
 
   useGetAllOrdersQuery, // Export the query hook for fetching all orders
+  useGetUserOrdersQuery,
+  useGetUserOrderDetilsQuery,
  
   useUpdateOrdersMutation, // Export the update mutation hook
 } = orderApi;

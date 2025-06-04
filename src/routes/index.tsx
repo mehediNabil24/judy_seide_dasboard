@@ -1,8 +1,8 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import DashboardLayout from "../components/layouts/Dashboard";
-import UnderConstruction from "../components/others/underConstructions";
+// import UnderConstruction from "../components/others/underConstructions";
 import SignInPage from "../components/pages/signIn/SignIn";
-import MainDashboard from "../components/pages/mainDashboard/MainDashboard";
+// import MainDashboard from "../components/pages/mainDashboard/MainDashboard";
 import AdminDashboard from "../components/pages/adminDashboard/AdminDashBoard";
 import { AdminNavLink, navLink } from "../components/layouts/Navlink";
 
@@ -21,6 +21,10 @@ import ReviewList from "../components/review/ReviewList";
 import AdminProfile from "../components/admin/AdminProfile";
 import BlogList from "../components/blog/BlogList";
 import AddBlog from "../components/blog/AddBlog";
+// import UserProfile from "../components/userProfile/userProfile";
+import UserOrderList from "../components/orders/UserOrderList";
+import UserOrderDetails from "../components/orders/UserOrderDetails";
+import UserProfile from "../components/userProfile/UserProfile";
 
 
 
@@ -31,13 +35,14 @@ const RouterProvider: React.FC = () => {
         <Route path="/" element={<SignInPage />} />
 
         {/* BUSINESS ROLE ROUTES */}
-        <Route element={<PrivateRoute allowedRoles={["BUSINESS"]} />}>
+        <Route element={<PrivateRoute allowedRoles={["USER"]} />}>
           <Route
             path="/dashboard"
             element={<DashboardLayout navLink={navLink} />}
           >
-            <Route index element={<MainDashboard />} />
-            <Route path="booking-list" element={< Hello/>} />
+            <Route index element={<UserProfile />} />
+            <Route path="order-list" element={< UserOrderList/>} />
+            <Route path="order-list/:id" element={<UserOrderDetails />} />
             <Route path="add-service" element={<Hello/>} />
             <Route path="my-service" element={<Hello />} />
             <Route path="book-service" element={<Hello/>} />

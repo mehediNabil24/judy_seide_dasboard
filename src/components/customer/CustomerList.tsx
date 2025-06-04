@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import  {  useMemo, useState } from "react";
 import {
   Table,
   Input,
   Button,
-  message,
-  Space,
+ 
 } from "antd";
 import { SearchOutlined, EyeOutlined, PrinterOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +42,7 @@ const CustomerList = () => {
       title: "Id",
       dataIndex: "id",
       key: "id",
-      render: (_: any, record: any, index: number) => index + 1,
+      render: (_: any,  index: number) => index + 1,
     },
     {
       title: "Joining Date",

@@ -44,13 +44,13 @@ const AdminRevenueChart: React.FC<RevenueChartProps> = ({
             Sales
           </span>
           <span className="text-sm font-medium text-gray-700">
-            <span className="inline-block w-4 h-4 border-2 border-dashed border-black rounded-full mr-1"></span>
+            <span className="inline-block w-4 h-4 border-2 bg-black border-dashed border-black rounded-full mr-1"></span>
             Orders
           </span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={400}>
         <LineChart
           data={data}
           margin={{ top: 5, right: 20, left: 20, bottom: 5 }}

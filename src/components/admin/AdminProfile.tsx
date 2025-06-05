@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { Row, Col, Input, Button, Avatar, Typography, Card, Form, Modal, Upload, message } from "antd"
-import { EyeInvisibleOutlined, EyeTwoTone, UploadOutlined, CloseOutlined } from "@ant-design/icons"
+import {  UploadOutlined, CloseOutlined } from "@ant-design/icons"
 import { useGetProfileQuery, useUpdateProfileMutation,  } from "../../redux/api/profile/profileApi"
 import type { UploadFile } from "antd/es/upload/interface"
 import { toast } from "sonner"
@@ -19,7 +19,7 @@ interface ProfileData {
 }
 
 const AdminProfile: React.FC = () => {
-  const [passwordVisible, setPasswordVisible] = useState(false)
+
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [form] = Form.useForm()
   const [fileList, setFileList] = useState<UploadFile[]>([])
@@ -126,7 +126,7 @@ const AdminProfile: React.FC = () => {
               type="primary"
               onClick={showModal}
               style={{
-                backgroundColor: "#ff9248",
+                backgroundColor: "#FB923C",
                 borderColor: "#ff9248",
                 height: "40px",
                 width: "120px",
@@ -147,7 +147,7 @@ const AdminProfile: React.FC = () => {
               style={{
                 height: "40px",
                 borderRadius: "4px",
-                borderColor: "#ff9248",
+                borderColor: "#FB923C",
               }}
               readOnly
             />
@@ -161,7 +161,7 @@ const AdminProfile: React.FC = () => {
                   style={{
                     height: "40px",
                     borderRadius: "4px",
-                    borderColor: "#ff9248",
+                    borderColor: "#FB923C",
                   }}
                   readOnly
                 />
@@ -174,14 +174,14 @@ const AdminProfile: React.FC = () => {
                   style={{
                     height: "40px",
                     borderRadius: "4px",
-                    borderColor: "#ff9248",
+                    borderColor: "#FB923C",
                   }}
                   readOnly
                 />
               </Form.Item>
             </Col>
           </Row>
-          <div style={{ borderTop: "2px solid #f0f0f0", paddingTop: "20px", paddingBottom: "80px" }}>
+          {/* <div style={{ borderTop: "2px solid #f0f0f0", paddingTop: "20px", paddingBottom: "80px" }}>
             <Form.Item label={<span style={{ fontWeight: "normal", fontSize: "20px " }}>Password</span>}>
               <Row gutter={16}>
                 <Col flex="auto">
@@ -216,7 +216,7 @@ const AdminProfile: React.FC = () => {
                 </Col>
               </Row>
             </Form.Item>
-          </div>
+          </div> */}
         </Form>
       </div>
 
@@ -231,7 +231,7 @@ const AdminProfile: React.FC = () => {
               paddingRight: "24px",
             }}
           >
-            <span style={{ color: "#ff9248", fontSize: "18px", fontWeight: "normal" }}>Edit Profile</span>
+            <span style={{ color: "#FB923C", fontSize: "18px", fontWeight: "normal" }}>Edit Profile</span>
             <CloseOutlined onClick={handleCancel} style={{ color: "#ff9248", fontSize: "16px", cursor: "pointer" }} />
           </div>
         }
@@ -258,7 +258,7 @@ const AdminProfile: React.FC = () => {
               style={{
                 height: "45px",
                 borderRadius: "4px",
-                borderColor: "#ff9248",
+                borderColor: "#FB923C",
                 fontSize: "14px",
               }}
             />
@@ -268,7 +268,7 @@ const AdminProfile: React.FC = () => {
             <Upload.Dragger
               {...uploadProps}
               style={{
-                borderColor: "#ff9248",
+                borderColor: "#FB923C",
                 borderRadius: "4px",
                 backgroundColor: "#fafafa",
                 padding: "40px 20px",
@@ -282,7 +282,7 @@ const AdminProfile: React.FC = () => {
                 </div>
                 <Button
                   style={{
-                    backgroundColor: "#ff9248",
+                    backgroundColor: "#FB923C",
                     borderColor: "#ff9248",
                     color: "white",
                     fontSize: "12px",
@@ -346,7 +346,7 @@ const AdminProfile: React.FC = () => {
               style={{
                 height: "45px",
                 borderRadius: "4px",
-                borderColor: "#ff9248",
+                borderColor: "#FB923C",
                 fontSize: "14px",
               }}
             />
@@ -362,7 +362,7 @@ const AdminProfile: React.FC = () => {
               style={{
                 height: "45px",
                 borderRadius: "4px",
-                borderColor: "#ff9248",
+                borderColor: "#FB923C",
                 fontSize: "14px",
                 marginBottom: "40px",
               }}
@@ -388,7 +388,7 @@ const AdminProfile: React.FC = () => {
               onClick={handleUpdate}
               loading={isUpdating}
               style={{
-                backgroundColor: "#ff9248",
+                backgroundColor: "#FB923C",
                 borderColor: "#ff9248",
                 height: "45px",
                 width: "140px",

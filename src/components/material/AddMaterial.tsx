@@ -25,7 +25,7 @@ const AddMaterial: React.FC = () => {
 
   return (
     <div className="p-6 max-w-full mx-auto">
-      <h2 className="text-orange-500 font-semibold text-lg mb-6">Add Material</h2>
+      <h2 className="text-[#FB923C] font-semibold text-lg mb-6">Add Material</h2>
 
       <label className="block text-sm font-medium text-black mb-1">
         Material Name
@@ -34,21 +34,21 @@ const AddMaterial: React.FC = () => {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300 rounded-sm p-2 text-sm mb-16"
+        className="w-full border border-[#FB923C] focus:outline-none focus:ring-2 focus:ring-orange-300 rounded-sm p-2 text-sm mb-16"
         placeholder="Enter material"
       />
 
       <div className="flex justify-center gap-4">
         <button
           onClick={handleCancel}
-          className="border border-orange-400 text-black px-6 py-2 text-sm rounded-sm"
+          className="border border-[#FB923C] text-black px-6 py-2 text-sm rounded-sm"
         >
           Cancel
         </button>
         <button
           onClick={handleAddMaterial}
           disabled={isLoading}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 text-sm rounded-sm"
+          className="bg-[#FB923C] hover:bg-orange-600 text-white font-semibold px-6 py-2 text-sm rounded-sm"
         >
           {isLoading ? 'Adding...' : 'Add Material'}
         </button>

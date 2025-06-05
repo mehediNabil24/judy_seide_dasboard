@@ -11,6 +11,16 @@ export const feedbackApi = baseApi.injectEndpoints({
     //   }),
     // }),
 
+    addReview: builder.mutation({
+      query: (formData) => ({
+        url: "/review/create-review",  // API endpoint for creating a shop
+        method: "POST",
+        body: formData,  
+      }),
+      invalidatesTags: ['Feedback'], // Invalidate the 'Booking' tag to refetch data
+      
+    }),
+
     getAdminFeedback: builder.query({
       query: () => ({
         url: `/review/get-all-reviews/admin`,
@@ -39,5 +49,5 @@ export const feedbackApi = baseApi.injectEndpoints({
 
 
 // Export hooks for usage in functional components
-export const {useGetAdminFeedbackQuery, useUpdateReviewMutation } = feedbackApi;
+export const {useGetAdminFeedbackQuery, useUpdateReviewMutation,useAddReviewMutation } = feedbackApi;
 export default feedbackApi;

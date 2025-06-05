@@ -120,7 +120,7 @@ const AddBlog: React.FC = () => {
 
   return (
     <div style={{ padding: "24px", maxWidth: "full", margin: "0 auto" }}>
-      <h2 style={{ color: "#ff9248", fontSize: "20px", fontWeight: "normal", marginBottom: "32px" }}>
+      <h2 style={{ color: "##FB923C", fontSize: "20px", fontWeight: "normal", marginBottom: "32px" }}>
         Add Blog
       </h2>
 
@@ -136,7 +136,7 @@ const AddBlog: React.FC = () => {
             style={{
               height: "45px",
               borderRadius: "4px",
-              borderColor: "#ff9248",
+              borderColor: "##FB923C",
               fontSize: "14px",
             }}
           />
@@ -149,7 +149,7 @@ const AddBlog: React.FC = () => {
           <Upload.Dragger
             {...uploadProps}
             style={{
-              borderColor: "#ff9248",
+              borderColor: "#FB923C",
               borderRadius: "4px",
               backgroundColor: "#fafafa",
               padding: "40px 20px",
@@ -218,7 +218,7 @@ const AddBlog: React.FC = () => {
           label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Blog Description</span>}
           style={{ marginBottom: "24px" }}
         >
-          <div style={{ border: "1px solid #ff9248", borderRadius: "4px", overflow: "hidden" }}>
+          <div style={{ border: "1px solid #FB923C", borderRadius: "4px", overflow: "hidden" }}>
             <JoditEditor
               value={content}
               config={joditConfig}
@@ -260,8 +260,8 @@ const AddBlog: React.FC = () => {
             onClick={handleSubmit}
             loading={isLoading}
             style={{
-              backgroundColor: "#ff9248",
-              borderColor: "#ff9248",
+              backgroundColor: "#FB923C",
+              borderColor: "#FB923C",
               height: "45px",
               width: "120px",
               fontSize: "14px",

@@ -9,7 +9,7 @@ import {
   Dropdown,
   Menu,
 } from "antd";
-import { SearchOutlined, FilterOutlined, DownOutlined } from "@ant-design/icons";
+import { SearchOutlined,  DownOutlined } from "@ant-design/icons";
 import { useGetAllOrdersQuery } from "../../redux/api/order/orderApi";
 
 const { Title } = Typography;
@@ -155,10 +155,10 @@ const RecentOrderList: React.FC = () => {
             allowClear
             className="w-full sm:w-64"
           />
-          <Button
+          {/* <Button
             icon={<FilterOutlined />}
             style={{ backgroundColor: "#FFA500", border: "none", color: "white" }}
-          />
+          /> */}
         </Space>
       </div>
 

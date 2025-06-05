@@ -25,6 +25,8 @@ import AddBlog from "../components/blog/AddBlog";
 import UserOrderList from "../components/orders/UserOrderList";
 import UserOrderDetails from "../components/orders/UserOrderDetails";
 import UserProfile from "../components/userProfile/UserProfile";
+import PasswordChange from "../components/password/UserPassword";
+import AdminPasswordChange from "../components/password/adminPassword";
 
 
 
@@ -43,19 +45,9 @@ const RouterProvider: React.FC = () => {
             <Route index element={<UserProfile />} />
             <Route path="order-list" element={< UserOrderList/>} />
             <Route path="order-list/:id" element={<UserOrderDetails />} />
-            <Route path="add-service" element={<Hello/>} />
+            <Route path="password" element={<PasswordChange/>} />
             <Route path="my-service" element={<Hello />} />
-            <Route path="book-service" element={<Hello/>} />
-            <Route path="cancel-service" element={<Hello />} />
-            <Route path="shop-input" element={<Hello />} />
-            <Route path="reviews" element={<Hello />} />
-            <Route path="subscriptions" element={<Hello />} />
-            <Route path="payment-method" element={<Hello/>} />
-            <Route path="add-blog" element={<Hello />} />
-            <Route path="business-blog" element={<Hello />} />
-            <Route path="add-staff" element={<Hello />} />
-            <Route path="all-staffs" element={<Hello />} />
-            <Route path="user-payment" element={<Hello />} />
+           
           </Route>
         </Route>
 
@@ -81,6 +73,7 @@ const RouterProvider: React.FC = () => {
             <Route path="blog-details" element={<Hello />} />
             <Route path="reviews" element={<ReviewList />} />
             <Route path="admin-profile" element={<AdminProfile />} />
+            <Route path="password" element={< AdminPasswordChange/>} />
           </Route>
         </Route>
       </Routes>

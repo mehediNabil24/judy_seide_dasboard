@@ -1,58 +1,48 @@
-import  { useState, useEffect, useMemo } from "react";
-import {
-  Table,
-  Input,
-  Button,
-  Switch,
-  Space,
-  Image,
-  Modal,
-  Form,
-  Upload,
-  message,
-} from "antd";
+"use client"
+
+import { useState, useEffect, useMemo } from "react"
+import { Table, Input, Button, Switch, Space, Image, Modal, Form, Upload, message } from "antd"
 import {
   EditOutlined,
   DeleteOutlined,
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
-} from "@ant-design/icons";
-import Swal from "sweetalert2";
+  CloseOutlined,
+} from "@ant-design/icons"
+import Swal from "sweetalert2"
 import {
   useGetCategoriesQuery,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
-} from "../../redux/api/category/categoryApi";
+} from "../../redux/api/category/categoryApi"
 
 const CategoryList = () => {
-  const { data, isLoading } = useGetCategoriesQuery({});
-  const [deleteCategory] = useDeleteCategoryMutation();
-  const [updateCategory] = useUpdateCategoryMutation();
+  const { data, isLoading } = useGetCategoriesQuery({})
+  const [deleteCategory] = useDeleteCategoryMutation()
+  const [updateCategory] = useUpdateCategoryMutation()
 
-  const allCategories = useMemo(() => data?.data?.data || [], [data]);
-  const meta = data?.data?.meta;
+  const allCategories = useMemo(() => data?.data?.data || [], [data])
+  const meta = data?.data?.meta
 
-  const [filteredCategories, setFilteredCategories] = useState(allCategories);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState(allCategories)
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [form] = Form.useForm()
 
-  const [imageFile, setImageFile] = useState<any>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<any>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered = allCategories.filter((cat: any) =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredCategories(filtered);
+      const filtered = allCategories.filter((cat: any) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      setFilteredCategories(filtered)
     } else {
-      setFilteredCategories(allCategories);
+      setFilteredCategories(allCategories)
     }
-  }, [searchTerm, allCategories]);
+  }, [searchTerm, allCategories])
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
@@ -63,60 +53,85 @@ const CategoryList = () => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
-    });
+    })
 
     if (result.isConfirmed) {
       try {
-        await deleteCategory(id).unwrap();
-        Swal.fire("Deleted!", "Category has been deleted.", "success");
+        await deleteCategory(id).unwrap()
+        Swal.fire("Deleted!", "Category has been deleted.", "success")
       } catch {
-        Swal.fire("Error", "Failed to delete category", "error");
+        Swal.fire("Error", "Failed to delete category", "error")
       }
     }
-  };
+  }
 
   const handleEdit = (category: any) => {
-    setEditingCategory(category);
-    setEditModalVisible(true);
-    form.setFieldsValue({ ...category });
-    setImagePreview(category.imageUrl || null);
-  };
+    setEditingCategory(category)
+    setEditModalVisible(true)
+    form.setFieldsValue({ ...category })
+    setImagePreview(category.imageUrl || null)
+  }
 
   const handleUpdate = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await form.validateFields()
       const formData: any = {
         id: editingCategory.id,
         name: values.name,
         published: values.published,
-      };
-
-      if (imageFile) {
-        const uploadedImageUrl = URL.createObjectURL(imageFile);
-        formData.imageUrl = uploadedImageUrl;
       }
 
-      await updateCategory(formData).unwrap();
-      message.success("Category updated successfully");
-      setEditModalVisible(false);
-      form.resetFields();
-      setImageFile(null);
-      setImagePreview(null);
+      if (imageFile) {
+        const uploadedImageUrl = URL.createObjectURL(imageFile)
+        formData.imageUrl = uploadedImageUrl
+      }
+
+      await updateCategory(formData).unwrap()
+      message.success("Category updated successfully")
+      setEditModalVisible(false)
+      form.resetFields()
+      setImageFile(null)
+      setImagePreview(null)
     } catch {
-      message.error("Update failed");
+      message.error("Update failed")
     }
-  };
+  }
+
+  const handleCancel = () => {
+    setEditModalVisible(false)
+    setImageFile(null)
+    setImagePreview(null)
+    form.resetFields()
+  }
+
+  const uploadProps = {
+    beforeUpload: (file: File) => {
+      const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png"
+      if (!isJpgOrPng) {
+        message.error("You can only upload JPG/PNG file!")
+        return false
+      }
+      const isLt25M = file.size / 1024 / 1024 < 25
+      if (!isLt25M) {
+        message.error("Image must smaller than 25MB!")
+        return false
+      }
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+      return false // Prevent auto upload
+    },
+    onRemove: () => {
+      setImageFile(null)
+      setImagePreview(null)
+    },
+  }
 
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (name: string) => (
-        <span style={{ textTransform: "capitalize" }}>
-          {name.toLowerCase()}
-        </span>
-      ),
+      render: (name: string) => <span style={{ textTransform: "capitalize" }}>{name.toLowerCase()}</span>,
     },
     {
       title: "Image",
@@ -124,7 +139,7 @@ const CategoryList = () => {
       key: "image",
       render: (url: string) => (
         <Image
-          src={url}
+          src={url || "/placeholder.svg"}
           alt="category"
           width={60}
           height={40}
@@ -144,40 +159,25 @@ const CategoryList = () => {
       key: "actions",
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="text"
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => handleDelete(record.id)}
-          />
+          <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button type="text" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
         </Space>
       ),
     },
-  ];
+  ]
 
   return (
     <div style={{ padding: 20 }}>
       {/* Top Section */}
-      <div
-        style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
         <Input
           placeholder="Search Categories..."
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderColor: "#FFA500" }}
+          style={{ width: 250, borderColor: "#FB923C" }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ backgroundColor: "#FFA500", borderColor: "#FFA500" }}
-        >
+        <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}>
           Add Category
         </Button>
       </div>
@@ -192,64 +192,175 @@ const CategoryList = () => {
           current: meta?.page || 1,
           pageSize: meta?.limit || 10,
           total: meta?.total || 0,
-          showTotal: (total) =>
-            `Showing ${filteredCategories.length} of ${total}`,
+          showTotal: (total) => `Showing ${filteredCategories.length} of ${total}`,
         }}
         bordered
       />
 
-      {/* Edit Modal */}
+      {/* Edit Modal - Redesigned to match the image */}
       <Modal
-        title="Edit Category"
-        open={editModalVisible}
-        onCancel={() => {
-          setEditModalVisible(false);
-          setImageFile(null);
-          setImagePreview(null);
-        }}
-        onOk={handleUpdate}
-        okText="Update"
-        okButtonProps={{
-          style: { backgroundColor: "#FFA500", borderColor: "#FFA500" },
-        }}
-        width={600}
-      >
-        <Form layout="vertical" form={form}>
-          <Form.Item
-            label="Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter category name" }]}
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingRight: "24px",
+            }}
           >
-            <Input placeholder="Enter name" />
+            <span style={{ color: "#ff9248", fontSize: "18px", fontWeight: "normal" }}>Edit Category</span>
+            <CloseOutlined onClick={handleCancel} style={{ color: "#ff9248", fontSize: "16px", cursor: "pointer" }} />
+          </div>
+        }
+        open={editModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        closable={false}
+        width={600}
+        styles={{
+          header: {
+            borderBottom: "none",
+            paddingBottom: "16px",
+          },
+        }}
+      >
+        <Form form={form} layout="vertical" style={{ marginTop: "20px" }}>
+          <Form.Item
+            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Name</span>}
+            name="name"
+            rules={[{ required: true, message: "Please input category name!" }]}
+          >
+            <Input
+              placeholder="Earrings"
+              style={{
+                height: "45px",
+                borderRadius: "4px",
+                borderColor: "#ff9248",
+                fontSize: "14px",
+              }}
+            />
           </Form.Item>
 
-          <Form.Item label="Upload Image">
-            <Upload
-              beforeUpload={(file) => {
-                setImageFile(file);
-                setImagePreview(URL.createObjectURL(file));
-                return false;
+          <Form.Item
+            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Category Image</span>}
+          >
+            <Upload.Dragger
+              {...uploadProps}
+              style={{
+                borderColor: "#ff9248",
+                borderRadius: "4px",
+                backgroundColor: "#fafafa",
+                padding: "40px 20px",
               }}
-              showUploadList={false}
             >
-              <Button icon={<UploadOutlined />}>Choose Image</Button>
-            </Upload>
+              <div style={{ textAlign: "center" }}>
+                <UploadOutlined style={{ fontSize: "24px", color: "#666", marginBottom: "8px" }} />
+                <div style={{ fontSize: "16px", color: "#000", marginBottom: "4px" }}>Drop file or browse</div>
+                <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>
+                  Format: .jpeg, .png & Max file size: 25 MB
+                </div>
+                <Button
+                  style={{
+                    backgroundColor: "#ff9248",
+                    borderColor: "#ff9248",
+                    color: "white",
+                    fontSize: "12px",
+                    height: "32px",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
+                  }}
+                >
+                  Browse Files
+                </Button>
+              </div>
+            </Upload.Dragger>
+
             {imagePreview && (
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                style={{ marginTop: 10, maxHeight: 150 }}
-              />
+              <div style={{ marginTop: "16px" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: "120px",
+                    height: "80px",
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "4px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={imagePreview || "/placeholder.svg"}
+                    alt="preview"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <CloseOutlined
+                    onClick={() => {
+                      setImageFile(null)
+                      setImagePreview(null)
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: "4px",
+                      right: "4px",
+                      color: "#ff9248",
+                      backgroundColor: "white",
+                      borderRadius: "50%",
+                      padding: "2px",
+                      fontSize: "10px",
+                      cursor: "pointer",
+                    }}
+                  />
+                </div>
+              </div>
             )}
           </Form.Item>
 
-          <Form.Item label="Published" name="published" valuePropName="checked">
-            <Switch />
+          <Form.Item
+            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Published</span>}
+            name="published"
+            valuePropName="checked"
+            style={{ marginBottom: "40px" }}
+          >
+            <Switch
+              style={{
+                backgroundColor: "#52c41a",
+              }}
+            />
           </Form.Item>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "40px" }}>
+            <Button
+              onClick={handleCancel}
+              style={{
+                height: "45px",
+                width: "120px",
+                borderColor: "#ff9248",
+                color: "#ff9248",
+                fontSize: "14px",
+                fontWeight: "normal",
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleUpdate}
+              style={{
+                backgroundColor: "#ff9248",
+                borderColor: "#ff9248",
+                height: "45px",
+                width: "140px",
+                fontSize: "14px",
+                fontWeight: "normal",
+              }}
+            >
+              Update Category
+            </Button>
+          </div>
         </Form>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default CategoryList;
+export default CategoryList

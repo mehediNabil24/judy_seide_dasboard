@@ -115,7 +115,7 @@ const UserOrderList = () => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>User Order List</h2>
+      {/* <h2>User Order List</h2> */}
       <Table
         columns={columns}
         dataSource={orders}

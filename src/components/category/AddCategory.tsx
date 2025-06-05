@@ -19,7 +19,7 @@ type CategoryFormValues = {
 };
 
 // 🎨 Custom theme settings
-const customColor = '#FFA500';
+const customColor = '#FB923C';
 const customTextColor = '#333';
 
 const AddCategoryPage: React.FC = () => {
@@ -104,10 +104,10 @@ const AddCategoryPage: React.FC = () => {
                 boxShadow: `0 0 0 2px ${customColor}20`, // subtle focus ring
               }}
               onFocus={(e) =>
-                (e.target.style.boxShadow = `0 0 0 2px ${customColor}50`)
+                (e.target.style.boxShadow = `0 0 0 1px ${customColor}50`)
               }
               onBlur={(e) =>
-                (e.target.style.boxShadow = `0 0 0 2px ${customColor}20`)
+                (e.target.style.boxShadow = `0 0 0 1px ${customColor}20`)
               }
             />
           </Form.Item>

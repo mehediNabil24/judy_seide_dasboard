@@ -57,16 +57,22 @@ const MaterialList = () => {
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
     });
-
+  
     if (result.isConfirmed) {
       try {
         await deleteMaterial(id).unwrap();
         Swal.fire("Deleted!", "Material has been deleted.", "success");
-      } catch {
-        Swal.fire("Error", "Failed to delete material", "error");
+      } catch (err: any) {
+        const errorMessage =
+          err?.data?.message ||
+          err?.message ||
+          "Failed to delete material";
+  
+        Swal.fire("Error", errorMessage, "error");
       }
     }
   };
+  
 
   const handleEdit = (material: any) => {
     setEditingMaterial(material);
@@ -129,14 +135,14 @@ const MaterialList = () => {
         <Input
           placeholder="Search Materials..."
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderColor: "#FFA500" }}
+          style={{ width: 250, borderColor: "#FB923C" }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          style={{ backgroundColor: "#FFA500", borderColor: "#FFA500" }}
+          style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}
         >
           Add Material
         </Button>

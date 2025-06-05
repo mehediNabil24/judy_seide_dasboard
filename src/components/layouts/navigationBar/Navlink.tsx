@@ -199,7 +199,7 @@ export default function MainNavLink({
       <img
         src={logo}
         alt="Connex"
-        className="h-16 w-auto" // Adjust height/width as needed
+        className="h-12 w-auto" // Adjust height/width as needed
       />
     </div>
   )}

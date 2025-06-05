@@ -26,13 +26,22 @@ const CustomerApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Customers'], // Invalidate the 'Categories' tag to refetch data
     }),
+
+    deleteCustomer: builder.mutation({
+      query: (id) => ({
+        url: `/category/delete-category/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Customers'], // Invalidate the 'Categories' tag to refetch data
+    }),
+
   }),
   overrideExisting: false,
   
 });
 
 export const {
-    useGetAllCustomersQuery
+    useGetAllCustomersQuery, useDeleteCustomerMutation
     
  // Export the update mutation hook
 } = CustomerApi;

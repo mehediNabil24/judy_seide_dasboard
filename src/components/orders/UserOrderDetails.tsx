@@ -1,13 +1,18 @@
 "use client"
 
 import type React from "react"
-import { Row, Col, Typography, Tag, Image, Button, Spin, Input } from "antd"
+import { useState } from "react"
+import { Row, Col, Typography, Tag, Image, Button, Spin, Input, Modal, Rate, message } from "antd"
 import { CloseOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
 import { useParams, useNavigate } from "react-router-dom"
 import { useGetUserOrderDetilsQuery } from "../../redux/api/order/orderApi"
+import { useAddReviewMutation } from "../../redux/api/feedback/feedbackApi"
+import { toast } from "sonner"
+
 
 const { Title, Text } = Typography
+const { TextArea } = Input
 
 interface CartItem {
   productId: string
@@ -39,17 +44,20 @@ interface OrderData {
   updatedAt: string
 }
 
-// interface OrderResponse {
-//   success: boolean
-//   statusCode: number
-//   message: string
-//   data: OrderData
-// }
-
 const UserOrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data, isLoading, error } = useGetUserOrderDetilsQuery(id)
+
+  // Review modal states
+  const [isReviewModalVisible, setIsReviewModalVisible] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<string>("")
+  const [, setSelectedProductName] = useState<string>("")
+  const [reviewTitle, setReviewTitle] = useState("")
+  const [reviewComment, setReviewComment] = useState("")
+  const [reviewRating, setReviewRating] = useState(0)
+
+  const [addReview, { isLoading: isSubmittingReview }] = useAddReviewMutation()
 
   if (isLoading) {
     return (
@@ -84,12 +92,56 @@ const UserOrderDetails: React.FC = () => {
     }
   }
 
-  // const calculateSubtotal = () => {
-  //   return orderData.cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  // }
-
   const handleClose = () => {
     navigate(-1) // Go back to previous page
+  }
+
+  const handleReviewClick = (productId: string, productName: string) => {
+    setSelectedProductId(productId)
+    setSelectedProductName(productName)
+    setIsReviewModalVisible(true)
+    // Reset form
+    setReviewTitle("")
+    setReviewComment("")
+    setReviewRating(0)
+  }
+
+  const handleReviewCancel = () => {
+    setIsReviewModalVisible(false)
+    setSelectedProductId("")
+    setSelectedProductName("")
+    setReviewTitle("")
+    setReviewComment("")
+    setReviewRating(0)
+  }
+
+  const handleReviewSubmit = async () => {
+    if (!reviewTitle || !reviewComment || reviewRating === 0) {
+      message.error("Please fill in all fields and provide a rating")
+      return
+    }
+
+    try {
+     const res= await addReview({
+        title: reviewTitle,
+        comment: reviewComment,
+        rating: reviewRating,
+        productId: selectedProductId,
+      }).unwrap()
+
+      if(res.success){
+        toast.success(res.message)
+
+      } 
+      else{
+        toast.error(res.error)
+      }
+
+      
+      handleReviewCancel()
+    } catch (error) {
+      message.error("Failed to submit review")
+    }
   }
 
   return (
@@ -183,10 +235,10 @@ const UserOrderDetails: React.FC = () => {
                   <Text style={{ fontSize: "12px", color: "#666", marginLeft: "8px" }}>18k Gold Vermeil</Text>
                   <Button
                     type="link"
-                    onClick={() => navigate(`/add-rating/${item.productId}`)}
+                    onClick={() => handleReviewClick(item.productId, item.name)}
                     style={{
                       padding: "4px 8px",
-                      fontSize: "18px",
+                      fontSize: "13px",
                       color: "#ff9248",
                       marginLeft: "auto",
                       height: "auto",
@@ -337,13 +389,98 @@ const UserOrderDetails: React.FC = () => {
               {orderData.isPaid ? "PAID" : "UNPAID"}
             </Tag>
           </Col>
-          <Col>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Last Updated: {dayjs(orderData.updatedAt).format("DD/MM/YYYY HH:mm")}
-            </Text>
-          </Col>
         </Row>
       </div>
+
+      {/* Review Modal */}
+      <Modal
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ color: "#000", fontSize: "16px", fontWeight: "normal" }}>
+              Leave a Review About Our Service
+            </span>
+            <CloseOutlined
+              onClick={handleReviewCancel}
+              style={{ color: "#ff4d4f", fontSize: "16px", cursor: "pointer" }}
+            />
+          </div>
+        }
+        open={isReviewModalVisible}
+        onCancel={handleReviewCancel}
+        footer={null}
+        closable={false}
+        width={500}
+        styles={{
+          header: {
+            borderBottom: "none",
+            paddingBottom: "16px",
+          },
+        }}
+      >
+        <div style={{ padding: "0 0 24px" }}>
+          <Text style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "16px" }}>
+            Your email address will not be published
+          </Text>
+
+          <div style={{ marginBottom: "16px" }}>
+            <Text style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>Your rating:</Text>
+            <Rate value={reviewRating} onChange={setReviewRating} style={{ fontSize: "20px", color: "#ff9248" }} />
+          </div>
+
+          <div style={{ marginBottom: "16px" }}>
+            <Input
+              placeholder="Title"
+              value={reviewTitle}
+              onChange={(e) => setReviewTitle(e.target.value)}
+              style={{
+                height: "40px",
+                borderColor: "#d9d9d9",
+                borderRadius: "4px",
+                backgroundColor: "#f5f5f5",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "24px" }}>
+            <TextArea
+              placeholder="Write your comment"
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              rows={4}
+              style={{
+                borderColor: "#d9d9d9",
+                borderRadius: "4px",
+                backgroundColor: "#f5f5f5",
+                resize: "none",
+              }}
+            />
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <Button
+              type="primary"
+              onClick={handleReviewSubmit}
+              loading={isSubmittingReview}
+              style={{
+                backgroundColor: "#ff9248",
+                borderColor: "#ff9248",
+                height: "40px",
+                width: "120px",
+                fontSize: "14px",
+                fontWeight: "normal",
+              }}
+            >
+              REVIEW
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

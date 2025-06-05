@@ -48,20 +48,20 @@ const productApi = baseApi.injectEndpoints({
     // Delete Category API
     deleteProduct: builder.mutation({
       query: (id) => ({
-        url: `/category/delete-category/${id}`,
+        url: `/products/delete-product/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Categories'], // Invalidate the 'Categories' tag to refetch data
+      invalidatesTags: ['Products'], // Invalidate the 'Categories' tag to refetch data
     }),
 
     // Update Category API (PATCH)
     updateProduct: builder.mutation({
       query: ({ id, updatedData }) => ({
-        url: `/category/update-category/${id}`, // Adjust your actual update endpoint
+        url: `/products/update-product/${id}`, // Adjust your actual update endpoint
         method: 'PATCH',
         body: updatedData,
       }),
-      invalidatesTags: ['Categories'], // Invalidate the 'Categories' tag to refetch data
+      invalidatesTags: ['Products'], // Invalidate the 'Categories' tag to refetch data
     }),
   }),
   overrideExisting: false,

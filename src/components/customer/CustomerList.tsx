@@ -1,55 +1,57 @@
-import  {  useMemo, useState } from "react";
+"use client"
+
+import { useState } from "react"
+import type React from "react"
+import { Button, Table, message, Input } from "antd"
+import { EyeOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons"
 import {
-  Table,
-  Input,
-  Button,
- 
-} from "antd";
-import { SearchOutlined, EyeOutlined, PrinterOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { useGetAllCustomersQuery } from "../../redux/api/customer/customerApi";
+  useDeleteCustomerMutation,
+  useGetAllCustomersQuery,
+} from "../../redux/api/customer/customerApi"
+import Swal from "sweetalert2"
+
+interface Customer {
+  id: string
+  name: string
+  email: string
+  phone?: string | null
+  address?: string | null
+}
 
 
 
-const CustomerList = () => {
-  const { data, isLoading } = useGetAllCustomersQuery({});
-  console.log('all customer', data);
-  const navigate = useNavigate();
+const CustomerList: React.FC= () => {
+  const { data, isLoading, isError } = useGetAllCustomersQuery({})
+  const [deleteCustomer] = useDeleteCustomerMutation()
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
 
-  // 👇 Memoize to prevent infinite loops
-  const allCustomers = useMemo(() => data?.Data?.data || [], [data]);
-  const meta = data?.Data?.meta;
-
-  const filteredCustomers = useMemo(() => {
-    if (!searchTerm) return allCustomers;
-    return allCustomers.filter((customer: any) =>
-      customer.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, allCustomers]);
-
-  const handleDetails = (id: string) => {
-    navigate(`/customer/details/${id}`);
-  };
-
-  const handlePrint = () => {
-    window.print(); // triggers print dialog
-  };
+    if (result.isConfirmed) {
+      try {
+        await deleteCustomer(id).unwrap()
+        message.success("Customer deleted successfully")
+      } catch (error: any) {
+        const errorMessage = error?.data?.message || "Failed to delete customer"
+        message.error(errorMessage)
+      }
+    }
+  }
 
   const columns = [
     {
-      title: "Id",
+      title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (_: any,  index: number) => index + 1,
-    },
-    {
-      title: "Joining Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (createdAt: string) =>
-        createdAt ? new Date(createdAt).toLocaleDateString() : "N/A",
     },
     {
       title: "Name",
@@ -63,67 +65,77 @@ const CustomerList = () => {
     },
     {
       title: "Phone",
-      dataIndex: "contact",
-      key: "contact",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Button
-          type="text"
-          icon={<EyeOutlined />}
-          onClick={() => handleDetails(record.id)}
-        />
+      render: (_: any, record: Customer) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            // onClick={() => handleDetails(record.id)}
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record.id)}
+          />
+        </div>
       ),
     },
-  ];
+  ]
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (isError) {
+    return <div>Error fetching customers.</div>
+  }
+
+  const customers: Customer[] = Array.isArray(data?.Data?.data)
+    ? data.Data.data.map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.contact,
+        address: user.address,
+      }))
+    : []
+
+  // Filter customers based on search query
+  const filteredCustomers = customers.filter(customer => 
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
-    <div style={{ padding: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 20,
-        }}
-      >
+    <div>
+      <div style={{ marginBottom: 30,marginTop:20 }}>
         <Input
-          placeholder="Search Customers..."
+          placeholder="Search by customer name"
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderColor: "#FFA500" }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: 300,borderColor: "#FFA500" }}
+          allowClear
         />
-        <Button
-          icon={<PrinterOutlined />}
-          style={{
-            backgroundColor: "#FFA500",
-            color: "white",
-            borderColor: "#FFA500",
-          }}
-          onClick={handlePrint}
-        >
-          Print / Download
-        </Button>
       </div>
-
       <Table
         columns={columns}
         dataSource={filteredCustomers}
-        rowKey={(record: any) => record.id || record.email}
-        loading={isLoading}
-        pagination={{
-          current: meta?.page || 1,
-          pageSize: meta?.limit || 10,
-          total: meta?.total || 0,
-          showTotal: (total) =>
-            `Showing ${filteredCustomers.length} of ${total}`,
-        }}
-        bordered
+        rowKey={(record: Customer) => record.id}
       />
     </div>
-  );
-};
+  )
+}
 
-export default CustomerList;
+export default CustomerList

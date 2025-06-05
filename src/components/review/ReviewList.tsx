@@ -111,7 +111,7 @@ const ReviewList = () => {
         <Input
           placeholder="Search by review title..."
           prefix={<SearchOutlined />}
-          style={{ width: 300, borderColor: "#FFA500" }}
+          style={{ width: 300, borderColor: "#FB923C" }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

@@ -123,16 +123,16 @@ const OrderList = () => {
         <Input
           placeholder="Search by Customer..."
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderColor: "#FFA500" }}
+          style={{ width: 250, borderColor: "#FB923C" }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Button
           icon={<PrinterOutlined />}
           style={{
-            backgroundColor: "#FFA500",
+            backgroundColor: "#FB923C",
             color: "white",
-            borderColor: "#FFA500",
+            borderColor: "#FB923C",
           }}
           onClick={handlePrint}
         >

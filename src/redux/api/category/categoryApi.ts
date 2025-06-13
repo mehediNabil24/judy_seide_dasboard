@@ -32,14 +32,33 @@ const categoryApi = baseApi.injectEndpoints({
     }),
 
     // Update Category API (PATCH)
-    updateCategory: builder.mutation({
-      query: ({ id, updatedData }) => ({
-        url: `/category/update-category/${id}`, // Adjust your actual update endpoint
+  // In your API slice
+updateCategory: builder.mutation({
+  query: ({ id, updatedData }) => {
+    // Convert FormData to proper types if needed
+    if (updatedData instanceof FormData) {
+      return {
+        url: `/category/update-category/${id}`,
         method: 'PATCH',
         body: updatedData,
-      }),
-      invalidatesTags: ['Categories'], // Invalidate the 'Categories' tag to refetch data
-    }),
+      };
+    } else {
+      // Ensure published is boolean for JSON payload
+      return {
+        url: `/category/update-category/${id}`,
+        method: 'PATCH',
+        body: {
+          ...updatedData,
+          published: Boolean(updatedData.published)
+        },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+    }
+  },
+  invalidatesTags: ['Categories'],
+}),
   }),
   overrideExisting: false,
   

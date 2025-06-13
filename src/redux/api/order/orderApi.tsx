@@ -39,10 +39,10 @@ const orderApi = baseApi.injectEndpoints({
 
     // Update Category API (PATCH)
     updateOrders: builder.mutation({
-      query: ({ id, updatedData }) => ({
+      query: ({ id, status }) => ({
         url: `/order/update-order-status/${id}`, // Adjust your actual update endpoint
         method: 'PATCH',
-        body: updatedData,
+        body: {status},
       }),
       invalidatesTags: ['Orders'], // Invalidate the 'Categories' tag to refetch data
     }),

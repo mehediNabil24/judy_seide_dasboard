@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   Input,
@@ -8,27 +8,32 @@ import {
   Pagination,
   Dropdown,
   Menu,
+  message,
 } from "antd";
-import { SearchOutlined,  DownOutlined } from "@ant-design/icons";
-import { useGetAllOrdersQuery } from "../../redux/api/order/orderApi";
+import { SearchOutlined, DownOutlined } from "@ant-design/icons";
+import {
+  useGetAllOrdersQuery,
+  useUpdateOrdersMutation,
+
+} from "../../redux/api/order/orderApi";
+import { toast } from "sonner";
 
 const { Title } = Typography;
 
 const RecentOrderList: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10; // match with backend default
+  const pageSize = 10;
   const [sortField] = useState("createdAt");
 
-  // Query with pagination, sorting, and search
-  const { data, isLoading, isError } = useGetAllOrdersQuery({
+  const { data, isLoading, isError, refetch } = useGetAllOrdersQuery({
     searchTerm: searchText,
     page: currentPage,
     limit: pageSize,
     sort: sortField,
   });
 
-  console.log('RecentOrderList data:', data);
+  const [updateOrderStatus] = useUpdateOrdersMutation();
 
   const orders = data?.Data?.data || [];
   const total = data?.Data?.meta?.total || 0;
@@ -37,6 +42,17 @@ const RecentOrderList: React.FC = () => {
     Processing: "#ADD8E6",
     Delivered: "#90EE90",
     Cancel: "#FFDAB9",
+  };
+
+  const handleStatusChange = async (orderId: string, status: string) => {
+    try {
+      await updateOrderStatus({ id: orderId, status }).unwrap();
+      toast.success(`Order ${orderId} marked as ${status}`);
+      refetch(); // Refresh the list
+    } catch (error) {
+      toast.error("Failed to update order status");
+      console.error(error);
+    }
   };
 
   const columns = [
@@ -86,21 +102,26 @@ const RecentOrderList: React.FC = () => {
     {
       title: "Action",
       key: "action",
-      render: () => (
-        <Dropdown
-          overlay={
-            <Menu>
-              <Menu.Item key="1">Processing</Menu.Item>
-              <Menu.Item key="2">Delivered</Menu.Item>
-              <Menu.Item key="3">Cancel</Menu.Item>
-            </Menu>
-          }
-        >
-          <Button type="link">
-            Action <DownOutlined />
-          </Button>
-        </Dropdown>
-      ),
+      render: (_: any, record: any) => {
+        const { id, status } = record;
+
+        if (status !== "PROCESSING") return null;
+
+        return (
+          <Dropdown
+            overlay={
+              <Menu onClick={({ key }) => handleStatusChange(id, key)}>
+                <Menu.Item key="DELIVERED">DELIVERED</Menu.Item>
+                <Menu.Item key="CANCEL">CANCEL</Menu.Item>
+              </Menu>
+            }
+          >
+            <Button type="link">
+              Action <DownOutlined />
+            </Button>
+          </Dropdown>
+        );
+      },
     },
     {
       title: "Invoice",
@@ -150,15 +171,11 @@ const RecentOrderList: React.FC = () => {
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
-              setCurrentPage(1); // Reset page on new search
+              setCurrentPage(1);
             }}
             allowClear
             className="w-full sm:w-64"
           />
-          {/* <Button
-            icon={<FilterOutlined />}
-            style={{ backgroundColor: "#FFA500", border: "none", color: "white" }}
-          /> */}
         </Space>
       </div>
 

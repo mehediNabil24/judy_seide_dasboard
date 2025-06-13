@@ -20,7 +20,7 @@ import {
 const CategoryList = () => {
   const { data, isLoading } = useGetCategoriesQuery({})
   const [deleteCategory] = useDeleteCategoryMutation()
-  const [updateCategory] = useUpdateCategoryMutation()
+  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation()
 
   const allCategories = useMemo(() => data?.data?.data || [], [data])
   const meta = data?.data?.meta
@@ -37,7 +37,9 @@ const CategoryList = () => {
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered = allCategories.filter((cat: any) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      const filtered: any[] = allCategories.filter((cat: any) => 
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
       setFilteredCategories(filtered)
     } else {
       setFilteredCategories(allCategories)
@@ -68,34 +70,60 @@ const CategoryList = () => {
   const handleEdit = (category: any) => {
     setEditingCategory(category)
     setEditModalVisible(true)
-    form.setFieldsValue({ ...category })
+    form.setFieldsValue({ 
+      name: category.name,
+      published: category.published 
+    })
     setImagePreview(category.imageUrl || null)
+    setImageFile(null)
   }
 
-  const handleUpdate = async () => {
-    try {
-      const values = await form.validateFields()
-      const formData: any = {
+const handleUpdate = async () => {
+  try {
+    const values = await form.validateFields();
+
+    const publishedValue =
+      typeof values.published === "string"
+        ? values.published === "true"
+        : Boolean(values.published);
+
+    if (imageFile) {
+      // If an image is uploaded, use FormData
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("published", publishedValue.toString()); // Only convert here
+      formData.append("image", imageFile);
+
+      await updateCategory({
         id: editingCategory.id,
-        name: values.name,
-        published: values.published,
-      }
-
-      if (imageFile) {
-        const uploadedImageUrl = URL.createObjectURL(imageFile)
-        formData.imageUrl = uploadedImageUrl
-      }
-
-      await updateCategory(formData).unwrap()
-      message.success("Category updated successfully")
-      setEditModalVisible(false)
-      form.resetFields()
-      setImageFile(null)
-      setImagePreview(null)
-    } catch {
-      message.error("Update failed")
+        updatedData: formData,
+      }).unwrap();
+    } else {
+      // For normal update, use JSON with correct boolean
+      await updateCategory({
+        id: editingCategory.id,
+        updatedData: {
+          name: values.name,
+          published: publishedValue, // Boolean, not string
+        },
+      }).unwrap();
     }
+
+    message.success("Category updated successfully");
+    setEditModalVisible(false);
+    form.resetFields();
+    setImageFile(null);
+    setImagePreview(null);
+  } catch (error: any) {
+    console.error("Update error:", error);
+    message.error(
+      error.data?.message ||
+        error.message ||
+        "Update failed. Please try again."
+    );
   }
+};
+
 
   const handleCancel = () => {
     setEditModalVisible(false)
@@ -124,6 +152,8 @@ const CategoryList = () => {
       setImageFile(null)
       setImagePreview(null)
     },
+    accept: "image/jpeg,image/png",
+    maxCount: 1,
   }
 
   const columns = [
@@ -152,7 +182,22 @@ const CategoryList = () => {
       title: "Publish",
       dataIndex: "published",
       key: "published",
-      render: (published: boolean) => <Switch defaultChecked={published} />,
+      render: (published: boolean, record: any) => (
+        <Switch 
+          checked={published}
+          onChange={async (checked) => {
+            try {
+              await updateCategory({
+                id: record.id,
+                updatedData: { published: checked }
+              }).unwrap()
+              message.success("Status updated successfully")
+            } catch (error) {
+              message.error("Failed to update status")
+            }
+          }}
+        />
+      ),
     },
     {
       title: "Actions",
@@ -197,7 +242,7 @@ const CategoryList = () => {
         bordered
       />
 
-      {/* Edit Modal - Redesigned to match the image */}
+      {/* Edit Modal */}
       <Modal
         title={
           <div
@@ -275,7 +320,7 @@ const CategoryList = () => {
               </div>
             </Upload.Dragger>
 
-            {imagePreview && (
+            {(imagePreview || editingCategory?.imageUrl) && (
               <div style={{ marginTop: "16px" }}>
                 <div
                   style={{
@@ -289,7 +334,7 @@ const CategoryList = () => {
                   }}
                 >
                   <img
-                    src={imagePreview || "/placeholder.svg"}
+                    src={imagePreview || editingCategory?.imageUrl}
                     alt="preview"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
@@ -345,6 +390,7 @@ const CategoryList = () => {
             <Button
               type="primary"
               onClick={handleUpdate}
+              loading={isUpdating}
               style={{
                 backgroundColor: "#ff9248",
                 borderColor: "#ff9248",

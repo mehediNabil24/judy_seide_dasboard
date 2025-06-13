@@ -5,7 +5,7 @@ import AdminRevenueChart from "../revenueChart/AdminRevenueChart";
 
 const AdminChartData = () => {
   const { data: statsData } = useGetChartDataQuery({});
-  console.log('Admin Stats Data:', statsData);
+  // console.log('Admin Stats Data:', statsData);
 
   // Transform object to array
   const weeklyData = statsData?.data

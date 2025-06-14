@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   Input,
@@ -6,6 +6,7 @@ import {
   Switch,
   Space,
   Image,
+  
 } from "antd";
 import {
   DeleteOutlined,
@@ -18,28 +19,30 @@ import { useNavigate } from "react-router-dom";
 import {
   useDeleteProductMutation,
   useGetAllProductsQuery,
+  useUpdateProductMutation,
 } from "../../redux/api/product/productApi";
+import { toast } from "sonner";
 
 const ProductList = () => {
-  const { data, isLoading } = useGetAllProductsQuery({});
+  const { data, isLoading, refetch } = useGetAllProductsQuery({});
   const [deleteProduct] = useDeleteProductMutation();
+  const [updateProduct] = useUpdateProductMutation();
   const navigate = useNavigate();
 
-  const allProducts = data?.data?.data || [];
-  const meta = data?.data?.meta;
-
-  const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = allProducts.filter((product: any) =>
+  // Memoize allProducts to avoid reference changes on each render
+  const allProducts = useMemo(() => data?.data?.data || [], [data]);
+  const meta = data?.data?.meta;
+
+  // Filter products only when needed
+  const filteredProducts = useMemo(() => {
+    if (searchTerm.trim()) {
+      return allProducts.filter((product: any) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(allProducts);
     }
+    return allProducts;
   }, [searchTerm, allProducts]);
 
   const handleDelete = async (id: string) => {
@@ -60,6 +63,24 @@ const ProductList = () => {
       } catch {
         Swal.fire("Error", "Failed to delete product", "error");
       }
+    }
+  };
+
+  const handlePublishedChange = async (checked: boolean, productId: string) => {
+    try {
+      const formData = new FormData();
+      formData.append("published", checked.toString());
+      
+      await updateProduct({ 
+        id: productId, 
+        data: formData 
+      }).unwrap();
+      
+      toast.success("Product status updated successfully!");
+      refetch(); // Refresh the product list to reflect the change
+    } catch (error) {
+      toast.error("Failed to update product status");
+      console.error("Update error:", error);
     }
   };
 
@@ -109,7 +130,12 @@ const ProductList = () => {
       title: "Published",
       dataIndex: "published",
       key: "published",
-      render: (published: boolean) => <Switch defaultChecked={published} />,
+      render: (published: boolean, record: any) => (
+        <Switch 
+          checked={published} 
+          onChange={(checked) => handlePublishedChange(checked, record.id)}
+        />
+      ),
     },
     {
       title: "Actions",
@@ -152,6 +178,7 @@ const ProductList = () => {
           type="primary"
           icon={<PlusOutlined />}
           style={{ backgroundColor: "#FFA500", borderColor: "#FFA500" }}
+          onClick={() => navigate("/admin/add-product")}
         >
           Add Product
         </Button>

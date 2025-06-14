@@ -26,7 +26,7 @@ const productApi = baseApi.injectEndpoints({
           params.append("sort", sort); // Added sorting by createdAt
       
           return {
-            url: `/products/get-all-products?${params.toString()}`,
+            url: `/products/get-all-products/admin?${params.toString()}`,
             method: "GET",
           };
         },
@@ -55,14 +55,15 @@ const productApi = baseApi.injectEndpoints({
     }),
 
     // Update Category API (PATCH)
-    updateProduct: builder.mutation({
-      query: ({ id, updatedData }) => ({
-        url: `/products/update-product/${id}`, // Adjust your actual update endpoint
-        method: 'PATCH',
-        body: updatedData,
-      }),
-      invalidatesTags: ['Products'], // Invalidate the 'Categories' tag to refetch data
-    }),
+  updateProduct: builder.mutation({
+  query: ({ id, data }) => ({
+    url: `/products/update-product/${id}`,
+    method: 'PATCH',
+    body: data,
+    
+  }),
+  invalidatesTags: ['Products'],
+}),
   }),
   overrideExisting: false,
   

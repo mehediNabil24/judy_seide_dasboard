@@ -16,7 +16,7 @@ const categoryApi = baseApi.injectEndpoints({
     // Get All Categories API
     getCategories: builder.query({
       query: () => ({
-        url: "/category/get-all-categories",
+        url: "/category/get-all-categories/admin",
         method: "GET",
       }),
       providesTags: ['Categories'], // Provide the 'Categories' tag for caching
@@ -34,22 +34,20 @@ const categoryApi = baseApi.injectEndpoints({
     // Update Category API (PATCH)
   // In your API slice
 updateCategory: builder.mutation({
-  query: ({ id, updatedData }) => {
-    // Convert FormData to proper types if needed
+  query: ({ id, updatedData, published }) => {
     if (updatedData instanceof FormData) {
       return {
-        url: `/category/update-category/${id}`,
+        url: `/category/update-category/${id}?published=${published}`,
         method: 'PATCH',
         body: updatedData,
       };
     } else {
-      // Ensure published is boolean for JSON payload
       return {
         url: `/category/update-category/${id}`,
         method: 'PATCH',
         body: {
           ...updatedData,
-          published: Boolean(updatedData.published)
+          published: updatedData.published === true || updatedData.published === 'true'
         },
         headers: {
           'Content-Type': 'application/json'
@@ -59,6 +57,7 @@ updateCategory: builder.mutation({
   },
   invalidatesTags: ['Categories'],
 }),
+
   }),
   overrideExisting: false,
   

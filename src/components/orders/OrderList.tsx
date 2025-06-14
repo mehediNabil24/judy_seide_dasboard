@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { SearchOutlined, PrinterOutlined, DownOutlined } from "@ant-design/icons";
 import { useGetAllOrdersQuery, useUpdateOrdersMutation } from "../../redux/api/order/orderApi";
+import { toast } from "sonner";
 
 
 const OrderList = () => {
@@ -28,18 +29,20 @@ const OrderList = () => {
     );
   }, [searchTerm, allOrders]);
 
-  const handleUpdateStatus = async (id: string, status: string) => {
-    try {
-      const res = await updateOrder({ id, body: { status } }).unwrap();
-      if (res?.success) {
-        message.success(`Order marked as ${status}`);
-      } else {
-        message.error("Failed to update order");
-      }
-    } catch (error) {
-      message.error("Error updating order");
+ const handleUpdateStatus = async (id: string, status: string) => {
+  try {
+    const res = await updateOrder({ id, status }).unwrap(); // updated format
+    if (res?.success) {
+      toast.success(`Order marked as ${status}`);
+    } else {
+      message.error("Failed to update order");
     }
-  };
+  } catch (error) {
+    toast.error("Error updating order");
+    console.error(error);
+  }
+};
+
 
   const columns = [
     {
@@ -78,7 +81,7 @@ const OrderList = () => {
       render: (status: string) => {
         let color = "blue";
         if (status === "DELIVERED") color = "green";
-        else if (status === "CANCELED") color = "red";
+        else if (status === "CANCEL") color = "red";
         return <Tag color={color}>{status}</Tag>;
       },
     },
@@ -91,7 +94,7 @@ const OrderList = () => {
             onClick={({ key }) => handleUpdateStatus(record.id, key)}
             items={[
               { key: "DELIVERED", label: "Delivered" },
-              { key: "CANCELED", label: "Canceled" },
+              { key: "CANCEL", label: "Cancel" },
             ]}
           />
         );

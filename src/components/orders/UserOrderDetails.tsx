@@ -49,6 +49,8 @@ const UserOrderDetails: React.FC = () => {
   const navigate = useNavigate()
   const { data, isLoading, error } = useGetUserOrderDetilsQuery(id)
 
+  console.log('data',data)
+
   // Review modal states
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<string>("")
@@ -185,25 +187,25 @@ const UserOrderDetails: React.FC = () => {
                   marginBottom: "16px",
                 }}
               >
-                <Row align="middle" gutter={12}>
+                <Row align="middle" gutter={20}>
                   <Col>
                     <Image
                       src={item.imageUrl[0] || "/placeholder.svg"}
                       alt={item.name}
-                      width={80}
+                      width={100}
                       height={80}
                       style={{ borderRadius: "6px", objectFit: "cover" }}
                     />
                   </Col>
                   <Col flex="auto">
                     <div>
-                      <Text strong style={{ fontSize: "14px", display: "block" }}>
+                      <Text strong style={{ fontSize: "18px", display: "block" }}>
                         {item.name}
                       </Text>
-                      <Text style={{ fontSize: "12px", color: "#666", display: "block", marginTop: "2px" }}>
+                      <Text style={{ fontSize: "14px", color: "#666", display: "block", marginTop: "2px" }}>
                         Quantity: {item.quantity}
                       </Text>
-                      <Text style={{ fontSize: "12px", color: "#666", display: "block", marginTop: "2px" }}>
+                      <Text style={{ fontSize: "14px", color: "#666", display: "block", marginTop: "2px" }}>
                         ${item.price} each
                       </Text>
                       <Text strong style={{ fontSize: "16px", color: "#000", display: "block", marginTop: "4px" }}>
@@ -213,7 +215,7 @@ const UserOrderDetails: React.FC = () => {
                   </Col>
                 </Row>
 
-                <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ marginTop: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
                   <div
                     style={{
                       width: "16px",
@@ -232,13 +234,13 @@ const UserOrderDetails: React.FC = () => {
                       border: "1px solid #d9d9d9",
                     }}
                   />
-                  <Text style={{ fontSize: "12px", color: "#666", marginLeft: "8px" }}>18k Gold Vermeil</Text>
+                  {/* <Text style={{ fontSize: "16px", color: "#666", marginLeft: "8px" }}>18k Gold Vermeil</Text> */}
                   <Button
                     type="link"
                     onClick={() => handleReviewClick(item.productId, item.name)}
                     style={{
                       padding: "4px 8px",
-                      fontSize: "13px",
+                      fontSize: "16px",
                       color: "#ff9248",
                       marginLeft: "auto",
                       height: "auto",
@@ -402,7 +404,7 @@ const UserOrderDetails: React.FC = () => {
               alignItems: "center",
             }}
           >
-            <span style={{ color: "#000", fontSize: "16px", fontWeight: "normal" }}>
+            <span style={{ color: "#000", fontSize: "18px", fontWeight: "medium" }}>
               Leave a Review About Our Service
             </span>
             <CloseOutlined
@@ -424,12 +426,12 @@ const UserOrderDetails: React.FC = () => {
         }}
       >
         <div style={{ padding: "0 0 24px" }}>
-          <Text style={{ fontSize: "12px", color: "#666", display: "block", marginBottom: "16px" }}>
+          <Text style={{ fontSize: "14px", color: "#666", display: "block", marginBottom: "16px" }}>
             Your email address will not be published
           </Text>
 
           <div style={{ marginBottom: "16px" }}>
-            <Text style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>Your rating:</Text>
+            <Text style={{ fontSize: "16px", color: "#000", display: "block", marginBottom: "8px" }}>Your rating:</Text>
             <Rate value={reviewRating} onChange={setReviewRating} style={{ fontSize: "20px", color: "#ff9248" }} />
           </div>
 

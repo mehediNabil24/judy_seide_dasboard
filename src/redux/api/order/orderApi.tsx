@@ -5,13 +5,20 @@ const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
 
-    getAllOrders: builder.query({
-      query: () => ({
-        url: "/order/get-all-orders",
-        method: "GET",
-      }),
-      providesTags: ['Orders'], 
-    }),
+  getAllOrders: builder.query({
+  query: ({ searchTerm = "", page = 1, limit = 10 }) => ({
+    url: "/order/get-all-orders",
+    method: "GET",
+    params: {
+      searchTerm,
+      page,
+      limit,
+      
+    },
+  }),
+  providesTags: ['Orders'],
+}),
+
 
 
     //get user order 

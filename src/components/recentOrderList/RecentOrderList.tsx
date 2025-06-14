@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   Input,
@@ -8,26 +8,39 @@ import {
   Pagination,
   Dropdown,
   Menu,
-  message,
 } from "antd";
 import { SearchOutlined, DownOutlined } from "@ant-design/icons";
 import {
   useGetAllOrdersQuery,
   useUpdateOrdersMutation,
-
 } from "../../redux/api/order/orderApi";
 import { toast } from "sonner";
+import { debounce } from "lodash";
 
 const { Title } = Typography;
 
 const RecentOrderList: React.FC = () => {
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchText);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [sortField] = useState("createdAt");
 
-  const { data, isLoading, isError, refetch } = useGetAllOrdersQuery({
-    searchTerm: searchText,
+  // Debounce search input
+  const debouncedSetSearch = useMemo(
+    () =>
+      debounce((val: string) => {
+        setDebouncedSearch(val);
+      }, 500),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSetSearch(searchText);
+  }, [searchText, debouncedSetSearch]);
+
+  const { data, isLoading,  refetch } = useGetAllOrdersQuery({
+    searchTerm: debouncedSearch,
     page: currentPage,
     limit: pageSize,
     sort: sortField,
@@ -56,31 +69,11 @@ const RecentOrderList: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: "Order ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Order Time",
-      dataIndex: "orderTime",
-      key: "orderTime",
-    },
-    {
-      title: "Customer Name",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Method",
-      dataIndex: "method",
-      key: "method",
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-    },
+    { title: "Order ID", dataIndex: "id", key: "id" },
+    { title: "Order Time", dataIndex: "orderTime", key: "orderTime" },
+    { title: "Customer Name", dataIndex: "email", key: "email" },
+    { title: "Method", dataIndex: "method", key: "method" },
+    { title: "Amount", dataIndex: "amount", key: "amount" },
     {
       title: "Status",
       dataIndex: "status",
@@ -104,9 +97,7 @@ const RecentOrderList: React.FC = () => {
       key: "action",
       render: (_: any, record: any) => {
         const { id, status } = record;
-
         if (status !== "PROCESSING") return null;
-
         return (
           <Dropdown
             overlay={
@@ -179,37 +170,30 @@ const RecentOrderList: React.FC = () => {
         </Space>
       </div>
 
-      {isLoading ? (
-        <p>Loading recent orders...</p>
-      ) : isError ? (
-        <p className="text-red-500">Failed to load recent orders.</p>
-      ) : (
-        <>
-          <Table
-            dataSource={transformedOrders}
-            columns={columns}
-            pagination={false}
-            rowKey="id"
-            size="middle"
-            bordered
-            className="custom-ant-table"
-          />
+      <Table
+        dataSource={transformedOrders}
+        columns={columns}
+        pagination={false}
+        loading={isLoading}
+        rowKey="id"
+        size="middle"
+        bordered
+        className="custom-ant-table"
+      />
 
-          <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
-            <p>
-              Showing {(currentPage - 1) * pageSize + 1} -{" "}
-              {(currentPage - 1) * pageSize + transformedOrders.length} of {total}
-            </p>
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={total}
-              onChange={setCurrentPage}
-              showSizeChanger={false}
-            />
-          </div>
-        </>
-      )}
+      <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
+        <p>
+          Showing {(currentPage - 1) * pageSize + 1} -{" "}
+          {(currentPage - 1) * pageSize + transformedOrders.length} of {total}
+        </p>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={total}
+          onChange={setCurrentPage}
+          showSizeChanger={false}
+        />
+      </div>
 
       <style>
         {`

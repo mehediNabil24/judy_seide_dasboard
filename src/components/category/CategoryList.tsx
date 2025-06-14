@@ -16,6 +16,8 @@ import {
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
 } from "../../redux/api/category/categoryApi"
+import { toast } from "sonner"
+import { Link } from "react-router-dom"
 
 const CategoryList = () => {
   const { data, isLoading } = useGetCategoriesQuery({})
@@ -81,45 +83,44 @@ const CategoryList = () => {
 const handleUpdate = async () => {
   try {
     const values = await form.validateFields();
-
-    const publishedValue =
-      typeof values.published === "string"
-        ? values.published === "true"
-        : Boolean(values.published);
+    const publishedValue = values.published === true || values.published === 'true';
 
     if (imageFile) {
-      // If an image is uploaded, use FormData
       const formData = new FormData();
       formData.append("name", values.name);
-      formData.append("published", publishedValue.toString()); // Only convert here
       formData.append("image", imageFile);
 
+      if (editingCategory?.imageUrl) {
+        formData.append("existingImageUrl", editingCategory.imageUrl);
+      }
+
+      // 👇 Send `published` separately through query param
       await updateCategory({
         id: editingCategory.id,
         updatedData: formData,
+        published: publishedValue, // passed to query param
       }).unwrap();
     } else {
-      // For normal update, use JSON with correct boolean
+      // Send as normal JSON
       await updateCategory({
         id: editingCategory.id,
         updatedData: {
           name: values.name,
-          published: publishedValue, // Boolean, not string
+          published: publishedValue,
+          imageUrl: editingCategory.imageUrl,
         },
       }).unwrap();
     }
 
-    message.success("Category updated successfully");
+    toast.success("Category updated successfully");
     setEditModalVisible(false);
     form.resetFields();
     setImageFile(null);
     setImagePreview(null);
   } catch (error: any) {
-    console.error("Update error:", error);
+    toast.error("Update error:", error);
     message.error(
-      error.data?.message ||
-        error.message ||
-        "Update failed. Please try again."
+      error?.data?.message || error?.message || "Update failed. Please try again."
     );
   }
 };
@@ -191,9 +192,9 @@ const handleUpdate = async () => {
                 id: record.id,
                 updatedData: { published: checked }
               }).unwrap()
-              message.success("Status updated successfully")
+              toast.success("Status updated successfully")
             } catch (error) {
-              message.error("Failed to update status")
+              toast.error("Failed to update status")
             }
           }}
         />
@@ -222,9 +223,11 @@ const handleUpdate = async () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}>
+      <Link to="/admin/add-category">
+        <Button  type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}>
           Add Category
         </Button>
+      </Link>
       </div>
 
       {/* Table Section */}

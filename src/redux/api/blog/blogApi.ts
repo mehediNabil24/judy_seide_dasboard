@@ -16,7 +16,7 @@ const blogApi = baseApi.injectEndpoints({
     //
     getAdminBlogs: builder.query({
       query: ({ page, limit }) => ({
-        url: `/blog/get-all-blogs?page=${page}&limit=${limit}`,
+        url: `/blog/get-all-blogs/admin?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: ['Blogs'], // provide blog list tag
@@ -40,7 +40,7 @@ const blogApi = baseApi.injectEndpoints({
     updateBlog: builder.mutation({
       query: ({ id, data }) => ({
         url: `/blog/update-blog/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: ['Blogs'], // invalidate blog list

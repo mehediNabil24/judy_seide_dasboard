@@ -5,7 +5,7 @@ import {
   Button,
   Modal,
   Form,
-  message,
+  
   Space,
 } from "antd";
 import {
@@ -20,6 +20,8 @@ import {
   useUpdateMaterialMutation,
   useDeleteMaterialMutation,
 } from "../../redux/api/material/materialApi";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const MaterialList = () => {
   const { data, isLoading } = useGetAllMaterialsQuery({});
@@ -88,11 +90,11 @@ const MaterialList = () => {
         name: values.name,
       };
       await updateMaterial(formData).unwrap();
-      message.success("Material updated successfully");
+      toast.success("Material updated successfully");
       setEditModalVisible(false);
       form.resetFields();
     } catch {
-      message.error("Update failed");
+      toast.error("Update failed");
     }
   };
 
@@ -139,13 +141,15 @@ const MaterialList = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button
+     <Link to="/admin/add-material">  
+      <Button
           type="primary"
           icon={<PlusOutlined />}
           style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}
         >
           Add Material
         </Button>
+        </Link>
       </div>
 
       {/* Table */}

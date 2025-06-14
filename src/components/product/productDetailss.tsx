@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom"
 import { Input, Image, Button, Modal, Form, Upload, Switch, message } from "antd"
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons"
 import { useGetSingleProductQuery, useUpdateProductMutation } from "../../redux/api/product/productApi"
+import { toast } from "sonner"
 
 const { TextArea } = Input
 
@@ -30,8 +31,8 @@ const ProductDetails: React.FC = () => {
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [form] = Form.useForm()
-  const [imageFile, setImageFile] = useState<any>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
 
   const product: ProductData = data?.data
 
@@ -52,14 +53,14 @@ const ProductDetails: React.FC = () => {
       tag: product.tags.join(", "),
       published: product.published,
     })
-    setImagePreview(product.imageUrl[0] || null)
+    setImagePreviews(product.imageUrl || [])
   }
 
   const handleCancel = () => {
     setIsEditModalVisible(false)
     form.resetFields()
-    setImageFile(null)
-    setImagePreview(null)
+    setImageFiles([])
+    setImagePreviews([])
   }
 
   const handleUpdate = async () => {
@@ -75,18 +76,23 @@ const ProductDetails: React.FC = () => {
       formData.append("tags", values.tag)
       formData.append("published", values.published.toString())
 
-      if (imageFile) {
-        formData.append("image", imageFile)
-      }
+      // Append all new images
+      imageFiles.forEach(file => {
+        formData.append("images", file)
+      })
 
-      await updateProduct({ id: product.id, data: formData }).unwrap()
-      message.success("Product updated successfully!")
+      await updateProduct({ 
+        id: product.id, 
+        data: formData 
+      }).unwrap()
+      toast.success("Product updated successfully!")
       setIsEditModalVisible(false)
       form.resetFields()
-      setImageFile(null)
-      setImagePreview(null)
+      setImageFiles([])
+      setImagePreviews([])
     } catch (error) {
-      message.error("Failed to update product")
+      toast.error("Failed to update product")
+      console.error("Update error:", error)
     }
   }
 
@@ -102,14 +108,11 @@ const ProductDetails: React.FC = () => {
         message.error("Image must smaller than 25MB!")
         return false
       }
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
+      setImageFiles(prev => [...prev, file])
+      setImagePreviews(prev => [...prev, URL.createObjectURL(file)])
       return false
     },
-    onRemove: () => {
-      setImageFile(null)
-      setImagePreview(null)
-    },
+    multiple: true,
   }
 
   return (
@@ -124,13 +127,6 @@ const ProductDetails: React.FC = () => {
         }}
       >
         <h2 style={{ color: customOrange, fontSize: "20px", fontWeight: "normal", margin: 0 }}>Product Details</h2>
-        {/* <CloseOutlined
-          style={{
-            color: customOrange,
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        /> */}
       </div>
 
       {/* Form Fields */}
@@ -197,27 +193,30 @@ const ProductDetails: React.FC = () => {
             <label
               style={{ fontSize: "14px", fontWeight: "normal", color: "#000", display: "block", marginBottom: "8px" }}
             >
-              Product Image
+              Product Images
             </label>
-            <div
-              style={{
-                width: "100%",
-                height: "120px",
-                border: `1px solid ${customOrange}`,
-                borderRadius: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#fafafa",
-                overflow: "hidden",
-              }}
-            >
-              <Image
-                src={product.imageUrl[0] || "/placeholder.svg"}
-                alt={product.name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                preview={false}
-              />
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {product.imageUrl.map((img, index) => (
+                <div
+                  key={index}
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    border: `1px solid ${customOrange}`,
+                    borderRadius: "4px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Image
+                    src={img}
+                    alt={`Product ${index + 1}`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    preview={{
+                      mask: <span>View</span>,
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -412,7 +411,7 @@ const ProductDetails: React.FC = () => {
               <label
                 style={{ fontSize: "14px", fontWeight: "normal", color: "#000", display: "block", marginBottom: "8px" }}
               >
-                Product Image
+                Product Images
               </label>
               <Upload.Dragger
                 {...uploadProps}
@@ -425,7 +424,7 @@ const ProductDetails: React.FC = () => {
               >
                 <div style={{ textAlign: "center", padding: "20px 10px" }}>
                   <UploadOutlined style={{ fontSize: "20px", color: "#666", marginBottom: "4px" }} />
-                  <div style={{ fontSize: "12px", color: "#000", marginBottom: "2px" }}>Drop file or browse</div>
+                  <div style={{ fontSize: "12px", color: "#000", marginBottom: "2px" }}>Drop files or browse</div>
                   <div style={{ fontSize: "10px", color: "#999", marginBottom: "8px" }}>
                     Format: .jpeg, .png & Max file size: 25 MB
                   </div>
@@ -444,28 +443,30 @@ const ProductDetails: React.FC = () => {
                 </div>
               </Upload.Dragger>
 
-              {imagePreview && (
-                <div style={{ marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                {imagePreviews.map((preview, index) => (
                   <div
+                    key={index}
                     style={{
                       position: "relative",
-                      display: "inline-block",
                       width: "80px",
-                      height: "60px",
+                      height: "80px",
                       backgroundColor: "#f0f0f0",
                       borderRadius: "4px",
                       overflow: "hidden",
                     }}
                   >
                     <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="preview"
+                      src={preview}
+                      alt={`preview-${index}`}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />
                     <CloseOutlined
                       onClick={() => {
-                        setImageFile(null)
-                        setImagePreview(null)
+                        setImagePreviews(prev => prev.filter((_, i) => i !== index))
+                        if (index >= product.imageUrl.length) {
+                          setImageFiles(prev => prev.filter((_, i) => i !== (index - product.imageUrl.length)))
+                        }
                       }}
                       style={{
                         position: "absolute",
@@ -480,8 +481,8 @@ const ProductDetails: React.FC = () => {
                       }}
                     />
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           </div>
 

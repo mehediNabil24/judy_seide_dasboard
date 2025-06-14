@@ -1,6 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { Table, Input, Space, Image, Typography, Button, Switch, message, Modal, Form, DatePicker, Upload } from "antd"
 import {
   SearchOutlined,
@@ -15,6 +13,8 @@ import Swal from "sweetalert2"
 import { useDeleteBlogMutation, useGetAdminBlogsQuery, useUpdateBlogMutation } from "../../redux/api/blog/blogApi"
 import JoditEditor from "jodit-react"
 import dayjs from "dayjs"
+import { toast } from "sonner"
+import { Link } from "react-router-dom"
 
 const { Text } = Typography
 
@@ -29,7 +29,7 @@ interface BlogData {
 }
 
 const BlogList = () => {
-  const { data, isLoading } = useGetAdminBlogsQuery({})
+  const { data, isLoading, refetch } = useGetAdminBlogsQuery({})
   const [deleteBlog] = useDeleteBlogMutation()
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation()
 
@@ -37,7 +37,6 @@ const BlogList = () => {
   const meta = data?.data?.meta
 
   const [searchTerm, setSearchTerm] = useState("")
-  const [filteredBlogs, setFilteredBlogs] = useState(allBlogs)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [editingBlog, setEditingBlog] = useState<BlogData | null>(null)
   const [form] = Form.useForm()
@@ -45,14 +44,11 @@ const BlogList = () => {
   const [imageFile, setImageFile] = useState<any>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = allBlogs.filter((blog: any) => blog.title.toLowerCase().includes(searchTerm.toLowerCase()))
-      setFilteredBlogs(filtered)
-    } else {
-      setFilteredBlogs(allBlogs)
-    }
-  }, [searchTerm, allBlogs])
+  const filteredBlogs = searchTerm
+    ? allBlogs.filter((blog: any) =>
+        blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : allBlogs
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
@@ -88,6 +84,28 @@ const BlogList = () => {
     })
   }
 
+  const handlePublishToggle = async (checked: boolean, record: BlogData) => {
+    try {
+      const formData = new FormData()
+      formData.append("isPublish", checked.toString())
+      
+      // Include existing image URL if available
+      if (record.imageUrl) {
+        formData.append("imageUrl", record.imageUrl)
+      }
+
+      await updateBlog({ 
+        id: record.id, 
+        data: formData 
+      }).unwrap()
+      
+      toast.success("Blog status updated successfully")
+      refetch()
+    } catch (error) {
+      toast.error("Failed to update blog status")
+    }
+  }
+
   const handleCancel = () => {
     setIsEditModalVisible(false)
     setEditingBlog(null)
@@ -117,7 +135,7 @@ const BlogList = () => {
       }
 
       await updateBlog({ id: editingBlog.id, data: formData }).unwrap()
-      message.success("Blog updated successfully")
+      toast.success("Blog updated successfully")
       setIsEditModalVisible(false)
       setEditingBlog(null)
       setBlogContent("")
@@ -125,7 +143,7 @@ const BlogList = () => {
       setImagePreview(null)
       form.resetFields()
     } catch (error) {
-      message.error("Failed to update blog")
+      toast.error("Failed to update blog")
     }
   }
 
@@ -219,21 +237,33 @@ const BlogList = () => {
       key: "title",
       render: (title: string) => <Text strong>{title}</Text>,
     },
-    {
-      title: "Description",
-      dataIndex: "content",
-      key: "content",
-      render: (content: string) => (
-        <Text ellipsis={{ tooltip: content }} style={{ maxWidth: 300 }}>
-          {content}
-        </Text>
-      ),
-    },
+   {
+  title: "Description",
+  dataIndex: "content",
+  key: "content",
+  render: (content: string) => (
+    <div
+      style={{
+        maxWidth: 300,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  ),
+}
+,
     {
       title: "Publish",
       dataIndex: "isPublish",
       key: "isPublish",
-      render: (isPublish: boolean) => <Switch checked={isPublish} disabled />,
+      render: (isPublish: boolean, record: BlogData) => (
+        <Switch 
+          checked={isPublish} 
+          onChange={(checked) => handlePublishToggle(checked, record)}
+        />
+      ),
     },
     {
       title: "Date",
@@ -274,9 +304,11 @@ const BlogList = () => {
         />
 
         <Space>
+         <Link to='/admin/add-blog'>
           <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FFA500" }}>
             Add Blog
           </Button>
+         </Link>
         </Space>
       </div>
 

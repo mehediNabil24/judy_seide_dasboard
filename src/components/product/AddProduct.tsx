@@ -16,6 +16,7 @@ import type { UploadFile, UploadProps } from "antd"
 import { useGetCategoriesQuery } from "../../redux/api/category/categoryApi"
 import { useGetAllMaterialsQuery } from "../../redux/api/material/materialApi"
 import { useAddProductMutation } from "../../redux/api/product/productApi"
+import { toast } from "sonner"
 
 interface FormValues {
   name: string
@@ -77,11 +78,11 @@ const AddProductPage: React.FC = () => {
       })
 
       await addProduct(formData).unwrap()
-      message.success("Product added successfully!")
+      toast.success("Product added successfully!")
       handleCancel()
     } catch (error) {
       console.error(error)
-      message.error("Failed to add product")
+      toast.error("Failed to add product")
     }
   }
 
@@ -92,13 +93,13 @@ const AddProductPage: React.FC = () => {
     beforeUpload: (file) => {
       const isImage = file.type.startsWith("image/")
       if (!isImage) {
-        message.error("Only image files allowed!")
+        toast.error("Only image files allowed!")
         return Upload.LIST_IGNORE
       }
 
       const isLt25M = file.size / 1024 / 1024 < 25
       if (!isLt25M) {
-        message.error("Image must be smaller than 25MB!")
+        toast.error("Image must be smaller than 25MB!")
         return Upload.LIST_IGNORE
       }
 

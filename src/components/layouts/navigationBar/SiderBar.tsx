@@ -23,7 +23,7 @@ export default function SideBar({ navRef, isOpen, isShort, additionalRoutes, nav
             </div>
 
 
-            <div className={`absolute -right-2  w-10 h-[60px]  ${dark ? "bg-black" : "bg-white"}`} />
+            <div className={`absolute -right-2  w-10 h-[60px]  ${dark ? "bg-white" : "bg-white"}`} />
 
         </div>
     )

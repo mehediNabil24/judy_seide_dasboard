@@ -1,7 +1,7 @@
 import  { useMemo } from "react";
-import { Table, Tag, Button, message, Tooltip } from "antd";
+import { Table, Tag, Button, Tooltip } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
-import { useGetUserOrdersQuery, useUpdateOrdersMutation } from "../../redux/api/order/orderApi";
+import { useGetUserOrdersQuery,  } from "../../redux/api/order/orderApi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -14,23 +14,23 @@ const UserOrderList = () => {
 
     const id = useSelector((state: any) => state.user.user?.id);
   const { data, isLoading } = useGetUserOrdersQuery(id);
-  const [updateOrder] = useUpdateOrdersMutation();
+  // const [updateOrder] = useUpdateOrdersMutation();
 
   const orders = useMemo(() => data?.Data?.data || [], [data]);
   const meta = data?.Data?.meta;
 
-  const handleCancelOrder = async (id: string) => {
-    try {
-      const res = await updateOrder({ id, body: { status: "CANCELED" } }).unwrap();
-      if (res?.success) {
-        message.success("Order canceled successfully.");
-      } else {
-        message.error("Failed to cancel the order.");
-      }
-    } catch (error) {
-      message.error("An error occurred while canceling.");
-    }
-  };
+  // const handleCancelOrder = async (id: string) => {
+  //   try {
+  //     const res = await updateOrder({ id, body: { status: "CANCELED" } }).unwrap();
+  //     if (res?.success) {
+  //       message.success("Order canceled successfully.");
+  //     } else {
+  //       message.error("Failed to cancel the order.");
+  //     }
+  //   } catch (error) {
+  //     message.error("An error occurred while canceling.");
+  //   }
+  // };
 
   // const handleViewDetails = (record: any) => {
   //   // You can implement a modal or redirect here
@@ -96,7 +96,7 @@ const UserOrderList = () => {
                 onClick={() => navigate(`/dashboard/order-list/${record.id}`)}
               />
             </Tooltip>
-            {record.status === "PROCESSING" && (
+            {/* {record.status === "PROCESSING" && (
               <Tooltip title="Cancel Order">
                 <Button
                   type="primary"
@@ -106,7 +106,7 @@ const UserOrderList = () => {
                   Cancel
                 </Button>
               </Tooltip>
-            )}
+            )} */}
           </div>
         ),
       },

@@ -103,7 +103,7 @@ const RecentOrderList: React.FC = () => {
             overlay={
               <Menu onClick={({ key }) => handleStatusChange(id, key)}>
                 <Menu.Item key="DELIVERED">DELIVERED</Menu.Item>
-                <Menu.Item key="CANCEL">CANCEL</Menu.Item>
+                {/* <Menu.Item key="CANCEL">CANCEL</Menu.Item> */}
               </Menu>
             }
           >

@@ -94,7 +94,7 @@ const OrderList = () => {
             onClick={({ key }) => handleUpdateStatus(record.id, key)}
             items={[
               { key: "DELIVERED", label: "Delivered" },
-              { key: "CANCEL", label: "Cancel" },
+              // { key: "CANCEL", label: "Cancel" },
             ]}
           />
         );

@@ -20,7 +20,7 @@ export default function TopBar({
     const user = useSelector((state: RootState) => state.user.user) as { name?: string; role?: string } | null;
 
     return (
-        <header className={`shadow-md ${dark ? "bg-black" : "bg-white"}`}>
+        <header className={`shadow-md ${dark ? "bg-white" : "bg-white"}`}>
             <div className="flex items-center justify-between px-4 py-3">
                 {/* Toggle Button */}
                 <button
@@ -37,7 +37,7 @@ export default function TopBar({
 
                 {/* Welcome Message */}
                 <div className="items-center gap-2">
-                    <span className={`text-sm font-medium ${dark ? "text-white" : "text-gray-700"}`}>
+                    <span className={`text-sm font-medium ${dark ? "text-black" : "text-gray-700"}`}>
                         Welcome Back, {user?.name || "John Doe"}!
                     </span>
                     <span className="text-xl">👋</span>
@@ -48,10 +48,10 @@ export default function TopBar({
                     {/* Avatar */}
                   <img src="" alt="" />
                     <div className="flex-1">
-                        <div className={`font-medium ${dark ? "text-white" : "text-gray-500"}`}>
+                        <div className={`font-medium ${dark ? "text-black" : "text-gray-500"}`}>
                             {user?.name || "John Doe"}
                         </div>
-                        <div className={`text-xs ${dark ? "text-white" : "text-gray-500"}`}>
+                        <div className={`text-xs ${dark ? "text-black" : "text-gray-500"}`}>
                             {user?.role || "Super Admin"}
                         </div>
                     </div>

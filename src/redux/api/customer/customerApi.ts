@@ -9,7 +9,7 @@ const CustomerApi = baseApi.injectEndpoints({
     // Get All
     getAllCustomers: builder.query({
       query: () => ({
-        url: "/user/get-all-users",
+        url: "/order/get-all-customers",
         method: "GET",
       }),
       providesTags: ['Customers'], 

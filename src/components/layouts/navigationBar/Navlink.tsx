@@ -84,10 +84,10 @@ export default function MainNavLink({
           className={`flex items-center justify-between gap-3 px-3 py-3 rounded-md cursor-pointer ${
             isActive(link.href)
               ? dark
-                ? "bg-primary text-white"
-                : "bg-primary text-white"
+                ? "bg-primary text-black"
+                : "bg-primary text-black"
               : dark
-              ? "text-white hover:bg-primary/40"
+              ? "text-black hover:bg-primary/40"
               : "hover:bg-primary/10 hover:text-primary"
           }`}
           onClick={() => hasSubItems && toggleDropdown(link.name)}
@@ -138,10 +138,10 @@ export default function MainNavLink({
                 className={`flex items-center gap-3 px-3 py-2 rounded-md overflow-hidden ${
                   isActive(subItem.href)
                     ? dark
-                      ? "bg-primary text-white"
-                      : "bg-primary text-white"
+                      ? "bg-primary text-black"
+                      : "bg-primary text-black"
                     : dark
-                    ? "text-white hover:bg-primary/40"
+                    ? "text-black hover:bg-primary/40"
                     : "hover:bg-primary/10 hover:text-primary"
                 }`}
               >
@@ -164,7 +164,7 @@ export default function MainNavLink({
   return (
     <div
       className={`flex flex-col min-h-screen  relative ${
-        dark ? "bg-black" : "bg-white"
+        dark ? "bg-white" : "bg-white"
       }`}
     >
       <div className="lg:block absolute top-16 right-0 hidden z-50">
@@ -250,7 +250,7 @@ export default function MainNavLink({
         <div
           className={`flex items-center gap-3 px-3 py-3 rounded-md cursor-pointer mt-auto ${
             dark
-              ? "text-white hover:bg-primary/40"
+              ? "text-black hover:bg-primary/40"
               : "hover:bg-primary/10 hover:text-primary"
           }`}
           onClick={handleLogout}

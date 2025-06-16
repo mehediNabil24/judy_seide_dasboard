@@ -12,6 +12,8 @@ const COLORS = ["#f59e0b", "#10b981", "#000000", "#22c55e", "#6366f1", "#f43f5e"
 const BestSelling: React.FC = () => {
   const { data, isLoading, isError } = useGetBestSellingQuery({});
 
+  // console.log('best selling', data);
+
   const renderLabel = () => (
     <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
       <tspan x="50%" dy="-0.5em" fontSize={12}>

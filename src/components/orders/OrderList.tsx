@@ -50,6 +50,7 @@ const OrderList = () => {
       dataIndex: "id",
       key: "id",
       render: (text: string) => text.slice(0, 8) + "...",
+      
     },
     {
       title: "Order Time",

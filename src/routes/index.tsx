@@ -36,7 +36,7 @@ const RouterProvider: React.FC = () => {
       <Routes>
         <Route path="/" element={<SignInPage />} />
 
-        {/* BUSINESS ROLE ROUTES */}
+        {/* User ROLE ROUTES */}
         <Route element={<PrivateRoute allowedRoles={["USER"]} />}>
           <Route
             path="/dashboard"

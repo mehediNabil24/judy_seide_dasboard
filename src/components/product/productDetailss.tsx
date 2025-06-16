@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useParams } from "react-router-dom"
-import { Input, Image, Button, Modal, Form, Upload, Switch, message } from "antd"
+import { Input, Image, Button, Modal, Form, Upload, Switch, message, Checkbox } from "antd"
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons"
 import { useGetSingleProductQuery, useUpdateProductMutation } from "../../redux/api/product/productApi"
 import { toast } from "sonner"
@@ -33,6 +33,7 @@ const ProductDetails: React.FC = () => {
   const [form] = Form.useForm()
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [imagesToKeep, setImagesToKeep] = useState<string[]>([])
 
   const product: ProductData = data?.data
 
@@ -54,6 +55,7 @@ const ProductDetails: React.FC = () => {
       published: product.published,
     })
     setImagePreviews(product.imageUrl || [])
+    setImagesToKeep(product.imageUrl || []) // Initialize with all existing images
   }
 
   const handleCancel = () => {
@@ -61,38 +63,61 @@ const ProductDetails: React.FC = () => {
     form.resetFields()
     setImageFiles([])
     setImagePreviews([])
+    setImagesToKeep([])
   }
 
-  const handleUpdate = async () => {
-    try {
-      const values = await form.validateFields()
-      const formData = new FormData()
+ const handleUpdate = async () => {
+  try {
+    const values = await form.validateFields();
+    const formData = new FormData();
 
-      formData.append("name", values.name)
-      formData.append("price", values.price.toString())
-      formData.append("description", values.description)
-      formData.append("material", values.material)
-      formData.append("quantity", values.quantity.toString())
-      formData.append("tags", values.tag)
-      formData.append("published", values.published.toString())
+    formData.append("name", values.name);
+    formData.append("price", values.price.toString());
+    formData.append("description", values.description);
+    formData.append("material", values.material);
+    formData.append("quantity", values.quantity.toString());
+    formData.append("tags", values.tag);
+    // formData.append("published", values.published.toString());
 
-      // Append all new images
-      imageFiles.forEach(file => {
-        formData.append("images", file)
-      })
+    // Append all new images
+    imageFiles.forEach(file => {
+      formData.append("images", file);
+    });
 
-      await updateProduct({ 
-        id: product.id, 
-        data: formData 
-      }).unwrap()
-      toast.success("Product updated successfully!")
-      setIsEditModalVisible(false)
-      form.resetFields()
-      setImageFiles([])
-      setImagePreviews([])
-    } catch (error) {
-      toast.error("Failed to update product")
-      console.error("Update error:", error)
+    // Append the URLs of images to keep as JSON string
+    if (imagesToKeep.length > 0) {
+      formData.append("imageUrlsToKeep", JSON.stringify(imagesToKeep));
+    }
+
+    await updateProduct({ 
+      id: product.id, 
+      data: formData 
+    }).unwrap();
+    toast.success("Product updated successfully!");
+    setIsEditModalVisible(false);
+    form.resetFields();
+    setImageFiles([]);
+    setImagePreviews([]);
+    setImagesToKeep([]);
+  } catch (error: any) {
+    let errorMessage = "Failed to update product";
+    
+    if (error?.data?.message) {
+      errorMessage = error.data.message;
+    } else if (error?.error) {
+      errorMessage = error.error;
+    }
+
+    toast.error(errorMessage);
+    console.error("Update error:", error);
+  }
+};
+
+  const handleImageToggle = (imageUrl: string, checked: boolean) => {
+    if (checked) {
+      setImagesToKeep(prev => [...prev, imageUrl]);
+    } else {
+      setImagesToKeep(prev => prev.filter(url => url !== imageUrl));
     }
   }
 
@@ -444,44 +469,64 @@ const ProductDetails: React.FC = () => {
               </Upload.Dragger>
 
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
-                {imagePreviews.map((preview, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: "relative",
-                      width: "80px",
-                      height: "80px",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <img
-                      src={preview}
-                      alt={`preview-${index}`}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                    <CloseOutlined
-                      onClick={() => {
-                        setImagePreviews(prev => prev.filter((_, i) => i !== index))
-                        if (index >= product.imageUrl.length) {
-                          setImageFiles(prev => prev.filter((_, i) => i !== (index - product.imageUrl.length)))
-                        }
-                      }}
+                {imagePreviews.map((preview, index) => {
+                  const isExistingImage = index < product.imageUrl.length;
+                  const isChecked = imagesToKeep.includes(preview) || 
+                                  (isExistingImage && !imagesToKeep.some(url => product.imageUrl.includes(url)));
+                  
+                  return (
+                    <div
+                      key={index}
                       style={{
-                        position: "absolute",
-                        top: "2px",
-                        right: "2px",
-                        color: customOrange,
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "1px",
-                        fontSize: "8px",
-                        cursor: "pointer",
+                        position: "relative",
+                        width: "80px",
+                        height: "80px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "4px",
+                        overflow: "hidden",
                       }}
-                    />
-                  </div>
-                ))}
+                    >
+                      <img
+                        src={preview}
+                        alt={`preview-${index}`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      {isExistingImage && (
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={(e) => handleImageToggle(preview, e.target.checked)}
+                          style={{
+                            position: "absolute",
+                            top: "2px",
+                            left: "2px",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+                      <CloseOutlined
+                        onClick={() => {
+                          setImagePreviews(prev => prev.filter((_, i) => i !== index))
+                          if (index >= product.imageUrl.length) {
+                            setImageFiles(prev => prev.filter((_, i) => i !== (index - product.imageUrl.length)))
+                          } else {
+                            setImagesToKeep(prev => prev.filter(url => url !== preview))
+                          }
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: "2px",
+                          right: "2px",
+                          color: customOrange,
+                          backgroundColor: "white",
+                          borderRadius: "50%",
+                          padding: "1px",
+                          fontSize: "8px",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -536,7 +581,7 @@ const ProductDetails: React.FC = () => {
                 }}
               />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Published</span>}
               name="published"
               valuePropName="checked"
@@ -548,7 +593,7 @@ const ProductDetails: React.FC = () => {
                   marginTop: "8px",
                 }}
               />
-            </Form.Item>
+            </Form.Item> */}
           </div>
 
           {/* Action Buttons */}

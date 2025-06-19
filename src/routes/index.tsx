@@ -27,6 +27,7 @@ import UserOrderDetails from "../components/orders/UserOrderDetails";
 import UserProfile from "../components/userProfile/UserProfile";
 import PasswordChange from "../components/password/UserPassword";
 import AdminPasswordChange from "../components/password/adminPassword";
+import Chat from "../components/chat/Chat";
 
 
 
@@ -74,6 +75,8 @@ const RouterProvider: React.FC = () => {
             <Route path="reviews" element={<ReviewList />} />
             <Route path="admin-profile" element={<AdminProfile />} />
             <Route path="password" element={< AdminPasswordChange/>} />
+            <Route path="chat" element={< Chat/>} />
+
           </Route>
         </Route>
       </Routes>

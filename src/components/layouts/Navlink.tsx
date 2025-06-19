@@ -1,4 +1,4 @@
-import { CiFolderOn, CiSettings} from 'react-icons/ci';
+import { CiChat1, CiFolderOn, CiSettings} from 'react-icons/ci';
 import {  FaUsers } from 'react-icons/fa';
 import { FaShop,} from 'react-icons/fa6';
 
@@ -148,6 +148,11 @@ export const AdminNavLink = [
     name: "Password Change",
     href: "/admin/password",
     icon: CiSettings,
+  },
+  {
+    name: "Chat ",
+    href: '/admin/chat',
+    icon: CiChat1,
   }
   
 ];

@@ -115,9 +115,32 @@ const AddProductPage: React.FC = () => {
     setColorPickersVisible((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const handleColorChange = (index: number, color: ColorResult) => {
+  const handleColorChange = (index: number, color: ColorResult | string) => {
     const variants = form.getFieldValue("variants");
-    variants[index].color = color.hex;
+    
+    if (typeof color === 'string') {
+      // Handle direct input (could be color name or hex code)
+      const tempElement = document.createElement('div');
+      tempElement.style.color = color;
+      document.body.appendChild(tempElement);
+      
+      const rgbColor = window.getComputedStyle(tempElement).color;
+      document.body.removeChild(tempElement);
+      
+      if (rgbColor.match(/^rgb/)) {
+        const rgbValues = rgbColor.match(/\d+/g)!.map(Number);
+        variants[index].color = `#${rgbValues.map(v => {
+          const hex = v.toString(16);
+          return hex.length === 1 ? '0' + hex : hex;
+        }).join('')}`;
+      } else {
+        variants[index].color = color.startsWith('#') ? color : `#${color}`;
+      }
+    } else {
+      // Handle color picker selection
+      variants[index].color = color.hex;
+    }
+    
     form.setFieldsValue({ variants });
   };
 
@@ -249,12 +272,8 @@ const AddProductPage: React.FC = () => {
                             </Popover>
                             <Input
                               value={form.getFieldValue(["variants", index, "color"])}
-                              onChange={(e) => {
-                                const variants = form.getFieldValue("variants");
-                                variants[index].color = e.target.value;
-                                form.setFieldsValue({ variants });
-                              }}
-                              placeholder="Hex or name"
+                              onChange={(e) => handleColorChange(index, e.target.value)}
+                              placeholder="Hex code or color name"
                             />
                           </div>
                         </Form.Item>

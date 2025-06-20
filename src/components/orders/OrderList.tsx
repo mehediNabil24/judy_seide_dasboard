@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import {  useMemo, useState } from "react";
 import {
   Table,
   Input,
@@ -8,28 +8,31 @@ import {
   Menu,
   Tag,
 } from "antd";
-import { SearchOutlined, PrinterOutlined, DownOutlined, EyeOutlined } from "@ant-design/icons";
-import { useGetAllOrdersQuery, useUpdateOrdersMutation } from "../../redux/api/order/orderApi";
+import {
+  SearchOutlined,
+  PrinterOutlined,
+  DownOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
+import {
+  useGetAllOrdersQuery,
+  useUpdateOrdersMutation,
+} from "../../redux/api/order/orderApi";
 import { toast } from "sonner";
 import OrderDetailsModal from "./OrderModal";
 
-
 const OrderList = () => {
-  const { data, isLoading } = useGetAllOrdersQuery({});
-  const [updateOrder] = useUpdateOrdersMutation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const { data, isLoading } = useGetAllOrdersQuery({ searchTerm, page, limit });
+  const [updateOrder] = useUpdateOrdersMutation();
+
   const allOrders = useMemo(() => data?.Data?.data || [], [data]);
   const meta = data?.Data?.meta;
-
-  const filteredOrders = useMemo(() => {
-    if (!searchTerm) return allOrders;
-    return allOrders.filter((order: any) =>
-      order?.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, allOrders]);
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -142,7 +145,10 @@ const OrderList = () => {
           prefix={<SearchOutlined />}
           style={{ width: 250, borderColor: "#FB923C" }}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1); // Reset to first page when search changes
+          }}
         />
         <Button
           icon={<PrinterOutlined />}
@@ -159,22 +165,25 @@ const OrderList = () => {
 
       <Table
         columns={columns}
-        dataSource={filteredOrders}
+        dataSource={allOrders}
         rowKey={(record: any) => record.id}
         loading={isLoading}
         pagination={{
-          current: meta?.page || 1,
-          pageSize: meta?.limit || 10,
+          current: page,
+          pageSize: limit,
           total: meta?.total || 0,
-          showTotal: (total) =>
-            `Showing ${filteredOrders.length} of ${total}`,
+          showTotal: (total) => `Showing ${allOrders.length} of ${total}`,
+          onChange: (newPage, newPageSize) => {
+            setPage(newPage);
+            setLimit(newPageSize);
+          },
         }}
         bordered
       />
 
       {/* Order Details Modal */}
       <OrderDetailsModal
-        orderId={selectedOrderId || ''}
+        orderId={selectedOrderId || ""}
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
       />

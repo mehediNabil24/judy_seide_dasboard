@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useParams } from "react-router-dom"
-import { Input, Image, Button, Modal, Form, Upload, Switch, message, Checkbox, Tag, Typography, InputNumber } from "antd"
+import { Input, Image, Button, Modal, Form, Upload, Switch, message, Checkbox, Tag, Typography, InputNumber, Spin } from "antd"
 import { CloseOutlined, UploadOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons"
 import { useGetSingleProductQuery, useUpdateProductMutation } from "../../redux/api/product/productApi"
 import { toast } from "sonner"
@@ -47,6 +47,7 @@ interface ProductData {
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { data, isLoading } = useGetSingleProductQuery(id || "")
+  // console.log('produict',data);
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation()
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -58,9 +59,12 @@ const ProductDetails: React.FC = () => {
   const product: ProductData = data?.data
 
   if (isLoading || !product) {
-    return <div>Loading...</div>
-  }
-
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
+      <Spin size="large" tip="Loading product..." />
+    </div>
+  );
+}
   const customOrange = "#ff9248"
 
   const handleEditClick = () => {

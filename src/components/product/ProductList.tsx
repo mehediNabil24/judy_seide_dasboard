@@ -6,7 +6,6 @@ import {
   Switch,
   Space,
   Image,
-  Tag,
   Popover,
   Typography
 } from "antd";
@@ -188,20 +187,20 @@ const ProductList = () => {
       key: "category",
       render: (category: { categoryName: string }) => category.categoryName,
     },
-    {
-      title: "Tags",
-      dataIndex: "tags",
-      key: "tags",
-      render: (tags: string[]) => (
-        <div style={{ maxWidth: 200 }}>
-          {tags.map((tag, index) => (
-            <Tag key={index} style={{ marginBottom: 4 }}>
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      ),
-    },
+    // {
+    //   title: "Tags",
+    //   dataIndex: "tags",
+    //   key: "tags",
+    //   render: (tags: string[]) => (
+    //     <div style={{ maxWidth: 200 }}>
+    //       {tags.map((tag, index) => (
+    //         <Tag key={index} style={{ marginBottom: 4 }}>
+    //           {tag}
+    //         </Tag>
+    //       ))}
+    //     </div>
+    //   ),
+    // },
     {
       title: "Status",
       dataIndex: "published",

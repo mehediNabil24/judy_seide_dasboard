@@ -2,14 +2,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
-import { useGetAdminOrderDetilsQuery } from "../../redux/api/order/orderApi";
+import { useGetUserOrderDetilsQuery } from "../../redux/api/order/orderApi";
 
-const Invoice = ({ orderId }: { orderId: string }) => {
-  const { data, isLoading } = useGetAdminOrderDetilsQuery(orderId);
-  const order = data?.Data;
+const UserInvoice = ({ orderId }: { orderId: string }) => {
+  const { data, isLoading } = useGetUserOrderDetilsQuery(orderId);
+  const order = data?.data;
 
   const generatePDF = () => {
     if (!order) return;
+
     const doc = new jsPDF();
 
     // Set up styles
@@ -31,7 +32,7 @@ const Invoice = ({ orderId }: { orderId: string }) => {
     doc.text("Bella D'or", 15, 35);
     doc.text("123 Business Street", 15, 40);
     doc.text("City, Country 10001", 15, 45);
-    doc.text("Bella D'or@company.com", 15, 50);
+    doc.text("bellador@company.com", 15, 50);
 
     // Invoice Info
     doc.setFontSize(12);
@@ -77,16 +78,14 @@ const Invoice = ({ orderId }: { orderId: string }) => {
           { content: "Subtotal", styles: { fillColor: [24, 144, 255], textColor: 255 } }
         ]
       ],
-      body: order.cartItems
-        ?.filter((item: any) => item && item.productName)
-        .map((item: any) => [
-          item.productName,
-          item.size || "-",
-          { content: item.color || "-", styles: { cellWidth: 20 } },
-          { content: `$${(item.price ?? 0).toFixed(2)}`, styles: { halign: 'right' } },
-          item.quantity ?? 0,
-          { content: `$${((item.price ?? 0) * (item.quantity ?? 0)).toFixed(2)}`, styles: { halign: 'right' } }
-        ]),
+      body: order.cartItems?.map((item: any) => [
+        item.productName,
+        item.size || "-",
+        { content: item.color || "-", styles: { cellWidth: 20 } },
+        { content: `$${(item.price ?? 0).toFixed(2)}`, styles: { halign: 'right' } },
+        item.quantity ?? 0,
+        { content: `$${((item.price ?? 0) * (item.quantity ?? 0)).toFixed(2)}`, styles: { halign: 'right' } }
+      ]) || [],
       styles: {
         fontSize: 10,
         cellPadding: 3,
@@ -121,10 +120,8 @@ const Invoice = ({ orderId }: { orderId: string }) => {
       disabled={isLoading || !order}
       loading={isLoading}
       size="small"
-    >
-     
-    </Button>
+    />
   );
 };
 
-export default Invoice;
+export default UserInvoice;

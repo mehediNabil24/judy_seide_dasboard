@@ -138,7 +138,8 @@ const RecentOrderList: React.FC = () => {
     {
       title: "Invoice",
       key: "invoice",
-      render: (_: any, record: any) => <Invoice order={record} />,
+      render: (_: any, record: any) => <Invoice orderId={record.id} />
+,
     },
   ];
 

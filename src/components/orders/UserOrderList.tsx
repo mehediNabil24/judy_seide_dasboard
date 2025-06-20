@@ -4,6 +4,8 @@ import { EyeOutlined } from "@ant-design/icons";
 import { useGetUserOrdersQuery,  } from "../../redux/api/order/orderApi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+// import Invoice from "../recentOrderList/Invoice";
+import UserInvoice from "./UserInvoice";
 
 
 
@@ -110,6 +112,12 @@ const UserOrderList = () => {
           </div>
         ),
       },
+       {
+      title: "Invoice",
+      key: "invoice",
+      render: (_: any, record: any) => <UserInvoice orderId={record.id} />
+,
+    },
       
   ];
 

@@ -39,6 +39,14 @@ const orderApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Orders'], 
     }),
+    // admin order deatils api 
+    getAdminOrderDetils: builder.query({
+      query: (id) => ({
+        url: `/order/get-order-by-id/${id}`,
+        method: "GET",
+      }),
+      providesTags: ['Orders'], 
+    }),
 
 
 
@@ -63,6 +71,7 @@ export const {
   useGetAllOrdersQuery, // Export the query hook for fetching all orders
   useGetUserOrdersQuery,
   useGetUserOrderDetilsQuery,
+  useGetAdminOrderDetilsQuery,
  
   useUpdateOrdersMutation, // Export the update mutation hook
 } = orderApi;

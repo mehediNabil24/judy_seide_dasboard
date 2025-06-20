@@ -1,7 +1,19 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Table, Input, Button, Switch, Space, Image, Modal, Form, Upload, message } from "antd"
+import {
+  Table,
+  Input,
+  Button,
+  Switch,
+  Space,
+  Image,
+  Modal,
+  Form,
+  Upload,
+  message,
+  Select
+} from "antd"
 import {
   EditOutlined,
   DeleteOutlined,
@@ -39,8 +51,8 @@ const CategoryList = () => {
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered: any[] = allCategories.filter((cat: any) => 
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered: any[] = allCategories.filter((cat: any) =>
+        cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
       )
       setFilteredCategories(filtered)
     } else {
@@ -72,59 +84,60 @@ const CategoryList = () => {
   const handleEdit = (category: any) => {
     setEditingCategory(category)
     setEditModalVisible(true)
-    form.setFieldsValue({ 
-      name: category.name,
-      published: category.published 
+    form.setFieldsValue({
+      categoryName: category.categoryName,
+      published: category.published,
+      sizes: category.sizes || [],
     })
     setImagePreview(category.imageUrl || null)
     setImageFile(null)
   }
 
-const handleUpdate = async () => {
-  try {
-    const values = await form.validateFields();
-    const publishedValue = values.published === true || values.published === 'true';
+  const handleUpdate = async () => {
+    try {
+      const values = await form.validateFields()
+      const publishedValue = values.published === true || values.published === "true"
 
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("image", imageFile);
+      if (imageFile) {
+        const formData = new FormData()
+        formData.append("categoryName", values.categoryName)
+        formData.append("image", imageFile)
+        formData.append("published", publishedValue ? "true" : "false")
+        formData.append("sizes", JSON.stringify(values.sizes))
 
-      if (editingCategory?.imageUrl) {
-        formData.append("existingImageUrl", editingCategory.imageUrl);
+        if (editingCategory?.imageUrl) {
+          formData.append("existingImageUrl", editingCategory.imageUrl)
+        }
+
+        await updateCategory({
+          id: editingCategory.id,
+          updatedData: formData,
+          published: publishedValue,
+        }).unwrap()
+      } else {
+        await updateCategory({
+          id: editingCategory.id,
+          updatedData: {
+            categoryName: values.categoryName,
+            published: publishedValue,
+            sizes: values.sizes,
+            imageUrl: editingCategory.imageUrl,
+          },
+        }).unwrap()
       }
 
-      // 👇 Send `published` separately through query param
-      await updateCategory({
-        id: editingCategory.id,
-        updatedData: formData,
-        published: publishedValue, // passed to query param
-      }).unwrap();
-    } else {
-      // Send as normal JSON
-      await updateCategory({
-        id: editingCategory.id,
-        updatedData: {
-          name: values.name,
-          published: publishedValue,
-          imageUrl: editingCategory.imageUrl,
-        },
-      }).unwrap();
+      toast.success("Category updated successfully")
+      setEditModalVisible(false)
+      form.resetFields()
+      setImageFile(null)
+      setImagePreview(null)
+    } catch (error: any) {
+      toast.error("Update error:", error)
+      message.error(
+        error?.data?.message || error?.message || "Update failed. Please try again."
+      )
     }
-
-    toast.success("Category updated successfully");
-    setEditModalVisible(false);
-    form.resetFields();
-    setImageFile(null);
-    setImagePreview(null);
-  } catch (error: any) {
-    toast.error("Update error:", error);
-    message.error(
-      error?.data?.message || error?.message || "Update failed. Please try again."
-    );
   }
-};
-
 
   const handleCancel = () => {
     setEditModalVisible(false)
@@ -147,7 +160,7 @@ const handleUpdate = async () => {
       }
       setImageFile(file)
       setImagePreview(URL.createObjectURL(file))
-      return false // Prevent auto upload
+      return false
     },
     onRemove: () => {
       setImageFile(null)
@@ -160,9 +173,11 @@ const handleUpdate = async () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
+      dataIndex: "categoryName",
       key: "name",
-      render: (name: string) => <span style={{ textTransform: "capitalize" }}>{name.toLowerCase()}</span>,
+      render: (name: string) => (
+        <span style={{ textTransform: "capitalize" }}>{name.toLowerCase()}</span>
+      ),
     },
     {
       title: "Image",
@@ -180,17 +195,23 @@ const handleUpdate = async () => {
       ),
     },
     {
+      title: "Sizes",
+      dataIndex: "sizes",
+      key: "sizes",
+      render: (sizes: string[]) => sizes?.join(", "),
+    },
+    {
       title: "Publish",
       dataIndex: "published",
       key: "published",
       render: (published: boolean, record: any) => (
-        <Switch 
+        <Switch
           checked={published}
           onChange={async (checked) => {
             try {
               await updateCategory({
                 id: record.id,
-                updatedData: { published: checked }
+                updatedData: { published: checked },
               }).unwrap()
               toast.success("Status updated successfully")
             } catch (error) {
@@ -214,7 +235,6 @@ const handleUpdate = async () => {
 
   return (
     <div style={{ padding: 20 }}>
-      {/* Top Section */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
         <Input
           placeholder="Search Categories..."
@@ -223,14 +243,17 @@ const handleUpdate = async () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-      <Link to="/admin/add-category">
-        <Button  type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}>
-          Add Category
-        </Button>
-      </Link>
+        <Link to="/admin/add-category">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}
+          >
+            Add Category
+          </Button>
+        </Link>
       </div>
 
-      {/* Table Section */}
       <Table
         columns={columns}
         dataSource={filteredCategories}
@@ -245,17 +268,9 @@ const handleUpdate = async () => {
         bordered
       />
 
-      {/* Edit Modal */}
       <Modal
         title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingRight: "24px",
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "24px" }}>
             <span style={{ color: "#ff9248", fontSize: "18px", fontWeight: "normal" }}>Edit Category</span>
             <CloseOutlined onClick={handleCancel} style={{ color: "#ff9248", fontSize: "16px", cursor: "pointer" }} />
           </div>
@@ -265,144 +280,61 @@ const handleUpdate = async () => {
         footer={null}
         closable={false}
         width={600}
-        styles={{
-          header: {
-            borderBottom: "none",
-            paddingBottom: "16px",
-          },
-        }}
       >
         <Form form={form} layout="vertical" style={{ marginTop: "20px" }}>
           <Form.Item
-            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Name</span>}
-            name="name"
+            label="Name"
+            name="categoryName"
             rules={[{ required: true, message: "Please input category name!" }]}
           >
-            <Input
-              placeholder="Earrings"
-              style={{
-                height: "45px",
-                borderRadius: "4px",
-                borderColor: "#ff9248",
-                fontSize: "14px",
+            <Input placeholder="Earrings" style={{ height: "45px", borderColor: "#ff9248" }} />
+          </Form.Item>
+
+          <Form.Item
+            label="Sizes"
+            name="sizes"
+            rules={[{ required: true, message: "Please input sizes!" }]}
+          >
+            <Select
+              mode="tags"
+              placeholder="Enter sizes like S, M, L"
+              tokenSeparators={[","]}
+              onBlur={() => {
+                const current = form.getFieldValue("sizes") || []
+                const lower = current.map((s: string) => s.toLowerCase())
+                form.setFieldsValue({ sizes: lower })
               }}
             />
           </Form.Item>
 
-          <Form.Item
-            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Category Image</span>}
-          >
-            <Upload.Dragger
-              {...uploadProps}
-              style={{
-                borderColor: "#ff9248",
-                borderRadius: "4px",
-                backgroundColor: "#fafafa",
-                padding: "40px 20px",
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <UploadOutlined style={{ fontSize: "24px", color: "#666", marginBottom: "8px" }} />
-                <div style={{ fontSize: "16px", color: "#000", marginBottom: "4px" }}>Drop file or browse</div>
-                <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>
-                  Format: .jpeg, .png & Max file size: 25 MB
-                </div>
-                <Button
-                  style={{
-                    backgroundColor: "#ff9248",
-                    borderColor: "#ff9248",
-                    color: "white",
-                    fontSize: "12px",
-                    height: "32px",
-                    paddingLeft: "16px",
-                    paddingRight: "16px",
-                  }}
-                >
-                  Browse Files
-                </Button>
-              </div>
+          <Form.Item label="Category Image">
+            <Upload.Dragger {...uploadProps}>
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined />
+              </p>
+              <p>Drop file or click to upload</p>
+              <p>JPG/PNG, Max: 25MB</p>
             </Upload.Dragger>
-
-            {(imagePreview || editingCategory?.imageUrl) && (
-              <div style={{ marginTop: "16px" }}>
-                <div
-                  style={{
-                    position: "relative",
-                    display: "inline-block",
-                    width: "120px",
-                    height: "80px",
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={imagePreview || editingCategory?.imageUrl}
-                    alt="preview"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                  <CloseOutlined
-                    onClick={() => {
-                      setImageFile(null)
-                      setImagePreview(null)
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "4px",
-                      right: "4px",
-                      color: "#ff9248",
-                      backgroundColor: "white",
-                      borderRadius: "50%",
-                      padding: "2px",
-                      fontSize: "10px",
-                      cursor: "pointer",
-                    }}
-                  />
-                </div>
+            {imagePreview && (
+              <div className="mt-4">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: "120px", height: "80px", objectFit: "cover", marginTop: 8 }}
+                />
               </div>
             )}
           </Form.Item>
 
-          <Form.Item
-            label={<span style={{ fontSize: "16px", fontWeight: "normal", color: "#000" }}>Published</span>}
-            name="published"
-            valuePropName="checked"
-            style={{ marginBottom: "40px" }}
-          >
-            <Switch
-              style={{
-                backgroundColor: "#52c41a",
-              }}
-            />
+          <Form.Item label="Published" name="published" valuePropName="checked">
+            <Switch />
           </Form.Item>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "40px" }}>
-            <Button
-              onClick={handleCancel}
-              style={{
-                height: "45px",
-                width: "120px",
-                borderColor: "#ff9248",
-                color: "#ff9248",
-                fontSize: "14px",
-                fontWeight: "normal",
-              }}
-            >
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+            <Button onClick={handleCancel} style={{ borderColor: "#ff9248", color: "#ff9248" }}>
               Cancel
             </Button>
-            <Button
-              type="primary"
-              onClick={handleUpdate}
-              loading={isUpdating}
-              style={{
-                backgroundColor: "#ff9248",
-                borderColor: "#ff9248",
-                height: "45px",
-                width: "140px",
-                fontSize: "14px",
-                fontWeight: "normal",
-              }}
-            >
+            <Button type="primary" onClick={handleUpdate} loading={isUpdating} style={{ backgroundColor: "#ff9248" }}>
               Update Category
             </Button>
           </div>

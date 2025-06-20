@@ -1,4 +1,4 @@
-import  { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Table,
   Input,
@@ -6,18 +6,20 @@ import {
   message,
   Dropdown,
   Menu,
-  
   Tag,
 } from "antd";
-import { SearchOutlined, PrinterOutlined, DownOutlined } from "@ant-design/icons";
+import { SearchOutlined, PrinterOutlined, DownOutlined, EyeOutlined } from "@ant-design/icons";
 import { useGetAllOrdersQuery, useUpdateOrdersMutation } from "../../redux/api/order/orderApi";
 import { toast } from "sonner";
+import OrderDetailsModal from "./OrderModal";
 
 
 const OrderList = () => {
   const { data, isLoading } = useGetAllOrdersQuery({});
   const [updateOrder] = useUpdateOrdersMutation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const allOrders = useMemo(() => data?.Data?.data || [], [data]);
   const meta = data?.Data?.meta;
@@ -29,20 +31,24 @@ const OrderList = () => {
     );
   }, [searchTerm, allOrders]);
 
- const handleUpdateStatus = async (id: string, status: string) => {
-  try {
-    const res = await updateOrder({ id, status }).unwrap(); // updated format
-    if (res?.success) {
-      toast.success(`Order marked as ${status}`);
-    } else {
-      message.error("Failed to update order");
+  const handleUpdateStatus = async (id: string, status: string) => {
+    try {
+      const res = await updateOrder({ id, status }).unwrap();
+      if (res?.success) {
+        toast.success(`Order marked as ${status}`);
+      } else {
+        message.error("Failed to update order");
+      }
+    } catch (error) {
+      toast.error("Error updating order");
+      console.error(error);
     }
-  } catch (error) {
-    toast.error("Error updating order");
-    console.error(error);
-  }
-};
+  };
 
+  const handleViewDetails = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsModalVisible(true);
+  };
 
   const columns = [
     {
@@ -50,7 +56,6 @@ const OrderList = () => {
       dataIndex: "id",
       key: "id",
       render: (text: string) => text.slice(0, 8) + "...",
-      
     },
     {
       title: "Order Time",
@@ -101,11 +106,19 @@ const OrderList = () => {
         );
 
         return (
-          <Dropdown overlay={menu}>
-            <Button>
-              Update Status <DownOutlined />
+          <div className="flex gap-2">
+            <Button
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetails(record.id)}
+            >
+              View
             </Button>
-          </Dropdown>
+            <Dropdown overlay={menu}>
+              <Button>
+                Update <DownOutlined />
+              </Button>
+            </Dropdown>
+          </div>
         );
       },
     },
@@ -157,6 +170,13 @@ const OrderList = () => {
             `Showing ${filteredOrders.length} of ${total}`,
         }}
         bordered
+      />
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        orderId={selectedOrderId || ''}
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
       />
     </div>
   );

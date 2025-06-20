@@ -2,7 +2,7 @@ import React from 'react';
 
 const Chat: React.FC = () => {
   const handleOpenTawkDashboard = () => {
-    window.open('https://dashboard.tawk.to', '_blank', 'noopener,noreferrer');
+    window.open('https://dashboard.tawk.to/#/monitoring', '_blank', 'noopener,noreferrer');
   };
 
   return (

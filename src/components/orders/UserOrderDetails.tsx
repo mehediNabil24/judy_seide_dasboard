@@ -15,17 +15,14 @@ const { Title, Text } = Typography
 const { TextArea } = Input
 
 interface CartItem {
+  variantId: string
   productId: string
-  name: string
-  imageUrl: string[]
+  productName: string
+  productImageUrls: string[]
+  size: string
+  color: string
   quantity: number
   price: number
-  product: {
-    id: string
-    name: string
-    price: number
-    imageUrl: string[]
-  }
 }
 
 interface OrderData {
@@ -35,6 +32,8 @@ interface OrderData {
   method: string
   email: string
   address: string
+  zipcode: string
+  note: string
   amount: number
   phone: string
   isPaid: boolean
@@ -42,6 +41,11 @@ interface OrderData {
   status: string
   createdAt: string
   updatedAt: string
+  customer: {
+    id: string
+    name: string
+    imageUrl: string
+  }
 }
 
 const UserOrderDetails: React.FC = () => {
@@ -49,12 +53,10 @@ const UserOrderDetails: React.FC = () => {
   const navigate = useNavigate()
   const { data, isLoading, error } = useGetUserOrderDetilsQuery(id)
 
-  console.log('data',data)
-
   // Review modal states
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<string>("")
-  const [, setSelectedProductName] = useState<string>("")
+  const [selectedProductName, setSelectedProductName] = useState<string>("")
   const [reviewTitle, setReviewTitle] = useState("")
   const [reviewComment, setReviewComment] = useState("")
   const [reviewRating, setReviewRating] = useState(0)
@@ -124,7 +126,7 @@ const UserOrderDetails: React.FC = () => {
     }
 
     try {
-     const res= await addReview({
+      const res = await addReview({
         title: reviewTitle,
         comment: reviewComment,
         rating: reviewRating,
@@ -133,12 +135,10 @@ const UserOrderDetails: React.FC = () => {
 
       if(res.success){
         toast.success(res.message)
-
       } 
       else{
         toast.error(res.error)
       }
-
       
       handleReviewCancel()
     } catch (error) {
@@ -170,6 +170,23 @@ const UserOrderDetails: React.FC = () => {
         />
       </div>
 
+      {/* Customer Info */}
+      <div style={{ marginBottom: "24px", display: "flex", alignItems: "center", gap: "16px" }}>
+        <Image
+          src={orderData.customer.imageUrl}
+          alt={orderData.customer.name}
+          width={64}
+          height={64}
+          style={{ borderRadius: "50%", objectFit: "cover" }}
+        />
+        <div>
+          <Text strong style={{ fontSize: "16px", display: "block" }}>
+            {orderData.customer.name}
+          </Text>
+          <Text style={{ color: "#666" }}>{orderData.email}</Text>
+        </div>
+      </div>
+
       {/* Product List */}
       <div style={{ marginBottom: "32px" }}>
         <Text strong style={{ fontSize: "16px", color: "#000", display: "block", marginBottom: "16px" }}>
@@ -178,7 +195,7 @@ const UserOrderDetails: React.FC = () => {
 
         <Row gutter={16}>
           {orderData.cartItems.map((item) => (
-            <Col span={12} key={item.productId}>
+            <Col span={12} key={item.variantId}>
               <div
                 style={{
                   border: "1px solid #f0f0f0",
@@ -190,8 +207,8 @@ const UserOrderDetails: React.FC = () => {
                 <Row align="middle" gutter={20}>
                   <Col>
                     <Image
-                      src={item.imageUrl[0] || "/placeholder.svg"}
-                      alt={item.name}
+                      src={item.productImageUrls[0]}
+                      alt={item.productName}
                       width={100}
                       height={80}
                       style={{ borderRadius: "6px", objectFit: "cover" }}
@@ -200,9 +217,13 @@ const UserOrderDetails: React.FC = () => {
                   <Col flex="auto">
                     <div>
                       <Text strong style={{ fontSize: "18px", display: "block" }}>
-                        {item.name}
+                        {item.productName}
                       </Text>
-                      <Text style={{ fontSize: "14px", color: "#666", display: "block", marginTop: "2px" }}>
+                      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                        <Tag>{item.size}</Tag>
+                        <Tag>{item.color}</Tag>
+                      </div>
+                      <Text style={{ fontSize: "14px", color: "#666", display: "block", marginTop: "4px" }}>
                         Quantity: {item.quantity}
                       </Text>
                       <Text style={{ fontSize: "14px", color: "#666", display: "block", marginTop: "2px" }}>
@@ -215,34 +236,14 @@ const UserOrderDetails: React.FC = () => {
                   </Col>
                 </Row>
 
-                <div style={{ marginTop: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      backgroundColor: "#ffd700",
-                      borderRadius: "50%",
-                      border: "2px solid #ff9248",
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      backgroundColor: "#c0c0c0",
-                      borderRadius: "50%",
-                      border: "1px solid #d9d9d9",
-                    }}
-                  />
-                  {/* <Text style={{ fontSize: "16px", color: "#666", marginLeft: "8px" }}>18k Gold Vermeil</Text> */}
+                <div style={{ marginTop: "14px", display: "flex", justifyContent: "flex-end" }}>
                   <Button
                     type="link"
-                    onClick={() => handleReviewClick(item.productId, item.name)}
+                    onClick={() => handleReviewClick(item.productId, item.productName)}
                     style={{
                       padding: "4px 8px",
                       fontSize: "16px",
                       color: "#ff9248",
-                      marginLeft: "auto",
                       height: "auto",
                       lineHeight: "1.2",
                     }}
@@ -265,7 +266,7 @@ const UserOrderDetails: React.FC = () => {
               Order ID
             </Text>
             <Input
-              value={orderData.id.slice(-4)} // Show last 4 characters
+              value={orderData.id}
               readOnly
               style={{
                 height: "40px",
@@ -292,7 +293,7 @@ const UserOrderDetails: React.FC = () => {
 
           <div style={{ marginBottom: "24px" }}>
             <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
-              Method
+              Payment Method
             </Text>
             <Input
               value={orderData.method}
@@ -319,13 +320,28 @@ const UserOrderDetails: React.FC = () => {
               }}
             />
           </div>
+
+          <div style={{ marginBottom: "24px" }}>
+            <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
+              Delivery Note
+            </Text>
+            <Input
+              value={orderData.note || "N/A"}
+              readOnly
+              style={{
+                height: "40px",
+                borderColor: "#ff9248",
+                borderRadius: "4px",
+              }}
+            />
+          </div>
         </Col>
 
         {/* Right Column */}
         <Col span={12}>
           <div style={{ marginBottom: "24px" }}>
             <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
-              Email
+              Contact Email
             </Text>
             <Input
               value={orderData.email}
@@ -340,10 +356,10 @@ const UserOrderDetails: React.FC = () => {
 
           <div style={{ marginBottom: "24px" }}>
             <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
-              Amount
+              Contact Phone
             </Text>
             <Input
-              value={`$${orderData.amount}`}
+              value={orderData.phone}
               readOnly
               style={{
                 height: "40px",
@@ -355,7 +371,22 @@ const UserOrderDetails: React.FC = () => {
 
           <div style={{ marginBottom: "24px" }}>
             <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
-              Status
+              Zip Code
+            </Text>
+            <Input
+              value={orderData.zipcode || "N/A"}
+              readOnly
+              style={{
+                height: "40px",
+                borderColor: "#ff9248",
+                borderRadius: "4px",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "24px" }}>
+            <Text strong style={{ fontSize: "14px", color: "#000", display: "block", marginBottom: "8px" }}>
+              Order Status
             </Text>
             <Input
               value={orderData.status}
@@ -405,7 +436,7 @@ const UserOrderDetails: React.FC = () => {
             }}
           >
             <span style={{ color: "#000", fontSize: "18px", fontWeight: "medium" }}>
-              Leave a Review About Our Service
+              Review for {selectedProductName}
             </span>
             <CloseOutlined
               onClick={handleReviewCancel}
@@ -427,7 +458,7 @@ const UserOrderDetails: React.FC = () => {
       >
         <div style={{ padding: "0 0 24px" }}>
           <Text style={{ fontSize: "14px", color: "#666", display: "block", marginBottom: "16px" }}>
-            Your email address will not be published
+            Your feedback helps us improve
           </Text>
 
           <div style={{ marginBottom: "16px" }}>
@@ -437,7 +468,7 @@ const UserOrderDetails: React.FC = () => {
 
           <div style={{ marginBottom: "16px" }}>
             <Input
-              placeholder="Title"
+              placeholder="Review title"
               value={reviewTitle}
               onChange={(e) => setReviewTitle(e.target.value)}
               style={{
@@ -451,7 +482,7 @@ const UserOrderDetails: React.FC = () => {
 
           <div style={{ marginBottom: "24px" }}>
             <TextArea
-              placeholder="Write your comment"
+              placeholder="Share your experience with this product"
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               rows={4}
@@ -478,7 +509,7 @@ const UserOrderDetails: React.FC = () => {
                 fontWeight: "normal",
               }}
             >
-              REVIEW
+              SUBMIT REVIEW
             </Button>
           </div>
         </div>

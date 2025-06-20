@@ -33,10 +33,10 @@ const materialApi = baseApi.injectEndpoints({
 
     // Update Category API (PATCH)
    updateMaterial: builder.mutation({
-  query: ({ id, name }) => ({
+  query: ({ id, materialName }) => ({
     url: `/materials/update-material/${id}`,
     method: 'PATCH',
-    body: { name },
+    body: { materialName },
   }),
   invalidatesTags: ['Materials'],
 }),

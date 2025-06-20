@@ -6,7 +6,9 @@ import {
   Switch,
   Space,
   Image,
-  
+  Tag,
+  Popover,
+  Typography
 } from "antd";
 import {
   DeleteOutlined,
@@ -23,23 +25,55 @@ import {
 } from "../../redux/api/product/productApi";
 import { toast } from "sonner";
 
+const { Text } = Typography;
+
+interface Variant {
+  size: string;
+  color: string;
+  price: number;
+  quantity: number;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string[];
+  tags: string[];
+  salesCount: number;
+  published: boolean;
+  materialId: string;
+  categoryId: string;
+  createdAt: string;
+  updatedAt: string;
+  category: {
+    categoryName: string;
+    imageUrl: string;
+  };
+  material: {
+    materialName: string;
+  };
+  variants: Variant[];
+}
+
 const ProductList = () => {
   const { data, isLoading, refetch } = useGetAllProductsQuery({});
+  // console.log('all product',data);
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Memoize allProducts to avoid reference changes on each render
-  const allProducts = useMemo(() => data?.data?.data || [], [data]);
+  const allProducts: Product[] = useMemo(() => data?.data?.data || [], [data]);
   const meta = data?.data?.meta;
 
-  // Filter products only when needed
   const filteredProducts = useMemo(() => {
     if (searchTerm.trim()) {
-      return allProducts.filter((product: any) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      return allProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     return allProducts;
@@ -77,7 +111,7 @@ const ProductList = () => {
       }).unwrap();
       
       toast.success("Product status updated successfully!");
-      refetch(); // Refresh the product list to reflect the change
+      refetch();
     } catch (error) {
       toast.error("Failed to update product status");
       console.error("Update error:", error);
@@ -99,38 +133,80 @@ const ProductList = () => {
       title: "Image",
       dataIndex: "imageUrl",
       key: "image",
-      render: (url: string[]) => (
+      render: (urls: string[]) => (
         <Image
-          src={url[0]}
+          src={urls?.[0]}
           alt="product"
           width={60}
           height={40}
           style={{ objectFit: "cover", borderRadius: 4 }}
-          preview={false}
+          preview={{
+            mask: <span>View</span>,
+            src: urls?.[0]
+          }}
         />
       ),
     },
     {
-      title: "Price",
-      dataIndex: "price",
+      title: "Price Range",
+      dataIndex: "variants",
       key: "price",
+      render: (variants: Variant[]) => {
+        const prices = variants.map(v => v.price);
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        return min === max ? `$${min}` : `$${min} - $${max}`;
+      },
+    },
+    {
+      title: "Variants",
+      dataIndex: "variants",
+      key: "variants",
+      render: (variants: Variant[]) => (
+        <Popover 
+          content={
+            <div>
+              {variants.map((variant, index) => (
+                <div key={index} style={{ marginBottom: 8 }}>
+                  <Text strong>{variant.size} ({variant.color})</Text>
+                  <div>Price: ${variant.price}</div>
+                  <div>Stock: {variant.quantity}</div>
+                </div>
+              ))}
+            </div>
+          }
+          title="Variant Details"
+          trigger="hover"
+        >
+          <Button type="link">{variants.length} variants</Button>
+        </Popover>
+      ),
     },
     {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      render: (category: any) => category.name,
+      render: (category: { categoryName: string }) => category.categoryName,
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
+      title: "Tags",
+      dataIndex: "tags",
+      key: "tags",
+      render: (tags: string[]) => (
+        <div style={{ maxWidth: 200 }}>
+          {tags.map((tag, index) => (
+            <Tag key={index} style={{ marginBottom: 4 }}>
+              {tag}
+            </Tag>
+          ))}
+        </div>
+      ),
     },
     {
-      title: "Published",
+      title: "Status",
       dataIndex: "published",
       key: "published",
-      render: (published: boolean, record: any) => (
+      render: (published: boolean, record: Product) => (
         <Switch 
           checked={published} 
           onChange={(checked) => handlePublishedChange(checked, record.id)}
@@ -140,7 +216,7 @@ const ProductList = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
+      render: (_: any, record: Product) => (
         <Space size="middle">
           <Button
             type="text"
@@ -168,9 +244,9 @@ const ProductList = () => {
         }}
       >
         <Input
-          placeholder="Search Products..."
+          placeholder="Search by name, description or tags..."
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderColor: "#FFA500" }}
+          style={{ width: 300, borderColor: "#FFA500" }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -193,10 +269,10 @@ const ProductList = () => {
           current: meta?.page || 1,
           pageSize: meta?.limit || 10,
           total: meta?.total || 0,
-          showTotal: (total) =>
-            `Showing ${filteredProducts.length} of ${total}`,
+          showTotal: (total) => `Total ${total} products`,
         }}
         bordered
+        scroll={{ x: true }}
       />
     </div>
   );

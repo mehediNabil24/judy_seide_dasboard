@@ -3,24 +3,23 @@ import { useAddMaterialMutation } from '../../redux/api/material/materialApi';
 import { toast } from 'sonner';
 
 const AddMaterial: React.FC = () => {
-  const [name, setName] = useState('');
+  const [materialName, setMaterialName] = useState('');
   const [addMaterial, { isLoading }] = useAddMaterialMutation();
 
   const handleAddMaterial = async () => {
-    if (!name.trim()) return;
+    if (!materialName.trim()) return;
 
     try {
-      await addMaterial({ name }).unwrap(); // 👈 Send as JSON
-      setName('');
+      await addMaterial({ materialName }).unwrap(); // 👈 Changed from { name }
+      setMaterialName('');
       toast.success('Material added successfully!');
     } catch (error) {
       toast.error(`Failed to add material: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
     }
   };
 
   const handleCancel = () => {
-    setName('');
+    setMaterialName('');
   };
 
   return (
@@ -32,8 +31,8 @@ const AddMaterial: React.FC = () => {
       </label>
       <input
         type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={materialName}
+        onChange={(e) => setMaterialName(e.target.value)}
         className="w-full border border-[#FB923C] focus:outline-none focus:ring-2 focus:ring-orange-300 rounded-sm p-2 text-sm mb-16"
         placeholder="Enter material"
       />

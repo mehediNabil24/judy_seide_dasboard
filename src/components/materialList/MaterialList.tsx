@@ -1,11 +1,10 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   Input,
   Button,
   Modal,
   Form,
-  
   Space,
 } from "antd";
 import {
@@ -41,7 +40,7 @@ const MaterialList = () => {
   useEffect(() => {
     if (searchTerm) {
       const filtered = allMaterials.filter((mat: any) =>
-        mat.name.toLowerCase().includes(searchTerm.toLowerCase())
+        mat.materialName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredMaterials(filtered);
     } else {
@@ -59,27 +58,26 @@ const MaterialList = () => {
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
     });
-  
+
     if (result.isConfirmed) {
       try {
         await deleteMaterial(id).unwrap();
         Swal.fire("Deleted!", "Material has been deleted.", "success");
       } catch (err: any) {
         const errorMessage =
-          err?.data?.message ||
-          err?.message ||
-          "Failed to delete material";
-  
+          err?.data?.message || err?.message || "Failed to delete material";
+
         Swal.fire("Error", errorMessage, "error");
       }
     }
   };
-  
 
   const handleEdit = (material: any) => {
     setEditingMaterial(material);
     setEditModalVisible(true);
-    form.setFieldsValue({ ...material });
+    form.setFieldsValue({
+      materialName: material.materialName,
+    });
   };
 
   const handleUpdate = async () => {
@@ -87,7 +85,7 @@ const MaterialList = () => {
       const values = await form.validateFields();
       const formData = {
         id: editingMaterial.id,
-        name: values.name,
+        materialName: values.materialName,
       };
       await updateMaterial(formData).unwrap();
       toast.success("Material updated successfully");
@@ -101,8 +99,8 @@ const MaterialList = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "materialName",
+      key: "materialName",
       render: (name: string) => (
         <span style={{ textTransform: "capitalize" }}>{name}</span>
       ),
@@ -141,14 +139,14 @@ const MaterialList = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-     <Link to="/admin/add-material">  
-      <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}
-        >
-          Add Material
-        </Button>
+        <Link to="/admin/add-material">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{ backgroundColor: "#FB923C", borderColor: "#FB923C" }}
+          >
+            Add Material
+          </Button>
         </Link>
       </div>
 
@@ -182,11 +180,11 @@ const MaterialList = () => {
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Name"
-            name="name"
+            label="Material Name"
+            name="materialName"
             rules={[{ required: true, message: "Please enter material name" }]}
           >
-            <Input placeholder="Enter name" />
+            <Input placeholder="Enter material name" />
           </Form.Item>
         </Form>
       </Modal>

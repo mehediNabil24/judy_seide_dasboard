@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Card,
+  Select,
 } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { toast } from 'sonner';
@@ -16,6 +17,7 @@ type CategoryFormValues = {
   name: string;
   image: File;
   published: boolean;
+  sizes: string[];
 };
 
 // 🎨 Custom theme settings
@@ -58,9 +60,14 @@ const AddCategoryPage: React.FC = () => {
 
     try {
       const formData = new FormData();
-      formData.append('name', values.name);
+      formData.append('categoryName', values.name);
       formData.append('image', file);
       formData.append('published', published ? 'true' : 'false');
+      
+      // Convert sizes to lowercase and join with commas
+     const sizesLowercase = values.sizes?.map(size => size.toLowerCase()) || [];
+    formData.append('sizes', JSON.stringify(sizesLowercase));
+
 
       await addCategory(formData).unwrap();
       toast.success('Category added successfully!');
@@ -112,38 +119,66 @@ const AddCategoryPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item label="Category Image">
-  <Upload.Dragger
-    {...uploadProps}
-    style={{
-      borderColor: customColor,
-      backgroundColor: `${customColor}10`, // light tint background
-      color: customTextColor,
-    }}
-    className="hover:border-orange-500" // Add hover effect using CSS class
-  >
-    <p className="ant-upload-drag-icon">
-      <UploadOutlined style={{ color: customColor }} />
-    </p>
-    <p className="ant-upload-text" style={{ color: customTextColor }}>
-      Drop file or browse
-    </p>
-    <p className="ant-upload-hint" style={{ color: customTextColor }}>
-      Format: jpeg, .png & Max file size: 25 MB
-    </p>
-  </Upload.Dragger>
+          <Form.Item
+            label="Sizes"
+            name="sizes"
+            rules={[{ required: true, message: 'Please select at least one size!' }]}
+          >
+            <Select
+              mode="tags"
+              size="large"
+              placeholder="Select sizes (e.g. S, M, L)"
+              style={{
+                borderColor: customColor,
+                color: customTextColor,
+              }}
+              tokenSeparators={[',']}
+              dropdownStyle={{ display: 'none' }} // Hide dropdown since we're using tags
+              onBlur={() => {
+                // Convert input to lowercase when blurring
+                const currentSizes = form.getFieldValue('sizes') || [];
+                if (currentSizes.length > 0) {
+                  const lowercased = currentSizes.map((size: string) => 
+                    typeof size === 'string' ? size.toLowerCase() : size
+                  );
+                  form.setFieldsValue({ sizes: lowercased });
+                }
+              }}
+            />
+          </Form.Item>
 
-  {file && (
-    <div className="mt-4">
-      <p className="text-sm text-gray-500">Preview:</p>
-      <img
-        src={URL.createObjectURL(file)}
-        alt="Preview"
-        className="mt-1 max-h-48 rounded border border-gray-200 shadow"
-      />
-    </div>
-  )}
-</Form.Item>
+          <Form.Item label="Category Image">
+            <Upload.Dragger
+              {...uploadProps}
+              style={{
+                borderColor: customColor,
+                backgroundColor: `${customColor}10`, // light tint background
+                color: customTextColor,
+              }}
+              className="hover:border-orange-500" // Add hover effect using CSS class
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined style={{ color: customColor }} />
+              </p>
+              <p className="ant-upload-text" style={{ color: customTextColor }}>
+                Drop file or browse
+              </p>
+              <p className="ant-upload-hint" style={{ color: customTextColor }}>
+                Format: jpeg, .png & Max file size: 25 MB
+              </p>
+            </Upload.Dragger>
+
+            {file && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">Preview:</p>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Preview"
+                  className="mt-1 max-h-48 rounded border border-gray-200 shadow"
+                />
+              </div>
+            )}
+          </Form.Item>
 
           <Form.Item label="Published" name="published" valuePropName="checked">
             <Switch checked={published} onChange={setPublished} />

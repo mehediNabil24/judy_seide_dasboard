@@ -1,5 +1,18 @@
-import {  useState } from "react"
-import { Table, Input, Space, Image, Typography, Button, Switch, message, Modal, Form, DatePicker, Upload } from "antd"
+import { useEffect, useState } from "react";
+import {
+  Table,
+  Input,
+  Space,
+  Image,
+  Typography,
+  Button,
+  Switch,
+  message,
+  Modal,
+  Form,
+  DatePicker,
+  Upload,
+} from "antd";
 import {
   SearchOutlined,
   EditOutlined,
@@ -7,48 +20,63 @@ import {
   PlusOutlined,
   CloseOutlined,
   UploadOutlined,
-} from "@ant-design/icons"
-import moment from "moment"
-import Swal from "sweetalert2"
-import { useDeleteBlogMutation, useGetAdminBlogsQuery, useUpdateBlogMutation } from "../../redux/api/blog/blogApi"
-import JoditEditor from "jodit-react"
-import dayjs from "dayjs"
-import { toast } from "sonner"
-import { Link } from "react-router-dom"
+} from "@ant-design/icons";
+import moment from "moment";
+import Swal from "sweetalert2";
+import {
+  useDeleteBlogMutation,
+  useGetAdminBlogsQuery,
+  useUpdateBlogMutation,
+} from "../../redux/api/blog/blogApi";
+import JoditEditor from "jodit-react";
+import dayjs from "dayjs";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
-const { Text } = Typography
+const { Text } = Typography;
 
 interface BlogData {
-  id: string
-  title: string
-  content: string
-  imageUrl: string
-  isPublish: boolean
-  createdAt: string
-  updatedAt: string
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string;
+  isPublish: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const BlogList = () => {
-  const { data, isLoading, refetch } = useGetAdminBlogsQuery({})
-  const [deleteBlog] = useDeleteBlogMutation()
-  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation()
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
 
-  const allBlogs = data?.data?.data || []
-  const meta = data?.data?.meta
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-  const [editingBlog, setEditingBlog] = useState<BlogData | null>(null)
-  const [form] = Form.useForm()
-  const [blogContent, setBlogContent] = useState("")
-  const [imageFile, setImageFile] = useState<any>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  // Fetch data with params for search & pagination
+  const { data, isLoading, refetch } = useGetAdminBlogsQuery({
+    searchTerm,
+    page: pagination.current,
+    limit: pagination.pageSize,
+  });
 
-  const filteredBlogs = searchTerm
-    ? allBlogs.filter((blog: any) =>
-        blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : allBlogs
+  const [deleteBlog] = useDeleteBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+
+  const allBlogs = data?.data?.data || [];
+  const meta = data?.data?.meta;
+
+  // Refetch data when pagination or searchTerm changes
+  useEffect(() => {
+    refetch();
+  }, [pagination, searchTerm]);
+
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<BlogData | null>(null);
+  const [form] = Form.useForm();
+  const [blogContent, setBlogContent] = useState("");
+  const [imageFile, setImageFile] = useState<any>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
@@ -59,115 +87,117 @@ const BlogList = () => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    })
+    });
 
     if (result.isConfirmed) {
       try {
-        await deleteBlog(id).unwrap()
-        message.success("Blog deleted successfully")
+        await deleteBlog(id).unwrap();
+        message.success("Blog deleted successfully");
+        refetch();
       } catch (err) {
-        message.error("Failed to delete blog")
+        message.error("Failed to delete blog");
       }
     }
-  }
+  };
 
   const handleEdit = (blog: BlogData) => {
-    setEditingBlog(blog)
-    setIsEditModalVisible(true)
-    setBlogContent(blog.content)
-    setImagePreview(blog.imageUrl)
+    setEditingBlog(blog);
+    setIsEditModalVisible(true);
+    setBlogContent(blog.content);
+    setImagePreview(blog.imageUrl);
 
     form.setFieldsValue({
       title: blog.title,
       date: dayjs(blog.createdAt),
       isPublish: blog.isPublish,
-    })
-  }
+    });
+  };
 
   const handlePublishToggle = async (checked: boolean, record: BlogData) => {
     try {
-      const formData = new FormData()
-      formData.append("isPublish", checked.toString())
-      
-      // Include existing image URL if available
+      const formData = new FormData();
+      formData.append("isPublish", checked.toString());
+
       if (record.imageUrl) {
-        formData.append("imageUrl", record.imageUrl)
+        formData.append("imageUrl", record.imageUrl);
       }
 
-      await updateBlog({ 
-        id: record.id, 
-        data: formData 
-      }).unwrap()
-      
-      toast.success("Blog status updated successfully")
-      refetch()
+      await updateBlog({
+        id: record.id,
+        data: formData,
+      }).unwrap();
+
+      toast.success("Blog status updated successfully");
+      refetch();
     } catch (error) {
-      toast.error("Failed to update blog status")
+      toast.error("Failed to update blog status");
     }
-  }
+  };
 
   const handleCancel = () => {
-    setIsEditModalVisible(false)
-    setEditingBlog(null)
-    setBlogContent("")
-    setImageFile(null)
-    setImagePreview(null)
-    form.resetFields()
-  }
+    setIsEditModalVisible(false);
+    setEditingBlog(null);
+    setBlogContent("");
+    setImageFile(null);
+    setImagePreview(null);
+    form.resetFields();
+  };
 
   const handleUpdate = async () => {
-    if (!editingBlog) return
+    if (!editingBlog) return;
 
     try {
-      const values = await form.validateFields()
-      const formData = new FormData()
+      const values = await form.validateFields();
+      const formData = new FormData();
 
-      formData.append("title", values.title)
-      formData.append("content", blogContent)
-      formData.append("isPublish", values.isPublish.toString())
+      formData.append("title", values.title);
+      formData.append("content", blogContent);
+      formData.append("isPublish", values.isPublish.toString());
 
       if (values.date) {
-        formData.append("createdAt", values.date.format("YYYY-MM-DD"))
+        formData.append("createdAt", values.date.format("YYYY-MM-DD"));
       }
 
       if (imageFile) {
-        formData.append("image", imageFile)
+        formData.append("image", imageFile);
       }
 
-      await updateBlog({ id: editingBlog.id, data: formData }).unwrap()
-      toast.success("Blog updated successfully")
-      setIsEditModalVisible(false)
-      setEditingBlog(null)
-      setBlogContent("")
-      setImageFile(null)
-      setImagePreview(null)
-      form.resetFields()
+      await updateBlog({ id: editingBlog.id, data: formData }).unwrap();
+      toast.success("Blog updated successfully");
+      setIsEditModalVisible(false);
+      setEditingBlog(null);
+      setBlogContent("");
+      setImageFile(null);
+      setImagePreview(null);
+      form.resetFields();
+      refetch();
     } catch (error) {
-      toast.error("Failed to update blog")
+      toast.error("Failed to update blog");
     }
-  }
+  };
 
   const uploadProps = {
     beforeUpload: (file: File) => {
-      const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png"
+      const isJpgOrPng =
+        file.type === "image/jpeg" || file.type === "image/png";
       if (!isJpgOrPng) {
-        message.error("You can only upload JPG/PNG file!")
-        return false
+        message.error("You can only upload JPG/PNG file!");
+        return false;
       }
-      const isLt25M = file.size / 1024 / 1024 < 25
+      const isLt25M = file.size / 1024 / 1024 < 25;
       if (!isLt25M) {
-        message.error("Image must smaller than 25MB!")
-        return false
+        message.error("Image must smaller than 25MB!");
+        return false;
       }
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
-      return false // Prevent auto upload
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      return false; // Prevent auto upload
     },
     onRemove: () => {
-      setImageFile(null)
-      setImagePreview(null)
+      setImageFile(null);
+      setImagePreview(null);
     },
-  }
+  };
 
   const joditConfig = {
     readonly: false,
@@ -214,7 +244,7 @@ const BlogList = () => {
     style: {
       font: "14px Arial, sans-serif",
     },
-  }
+  };
 
   const columns = [
     {
@@ -237,33 +267,32 @@ const BlogList = () => {
       key: "title",
       render: (title: string) => <Text strong>{title}</Text>,
     },
- {
-  title: "Description",
-  dataIndex: "content",
-  key: "content",
-  render: (content: string) => (
-    <div
-      style={{
-        maxWidth: 300,
-        display: "-webkit-box",
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: "vertical",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      }}
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
-  ),
-}
+    {
+      title: "Description",
+      dataIndex: "content",
+      key: "content",
+      render: (content: string) => (
+        <div
+          style={{
+            maxWidth: 300,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      ),
+    },
 
-,
     {
       title: "Publish",
       dataIndex: "isPublish",
       key: "isPublish",
       render: (isPublish: boolean, record: BlogData) => (
-        <Switch 
-          checked={isPublish} 
+        <Switch
+          checked={isPublish}
           onChange={(checked) => handlePublishToggle(checked, record)}
         />
       ),
@@ -279,12 +308,21 @@ const BlogList = () => {
       key: "actions",
       render: (_: any, record: any) => (
         <Space>
-          <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button type="text" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record.id)}
+          />
         </Space>
       ),
     },
-  ]
+  ];
 
   return (
     <div style={{ padding: 20 }}>
@@ -303,29 +341,41 @@ const BlogList = () => {
           prefix={<SearchOutlined />}
           style={{ width: 250, borderColor: "#FB923C" }}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            // Reset to page 1 on search change
+            setPagination((prev) => ({ ...prev, current: 1 }));
+          }}
         />
 
         <Space>
-         <Link to='/admin/add-blog'>
-          <Button type="primary" icon={<PlusOutlined />} style={{ backgroundColor: "#FB923C", borderColor: "#FFA500" }}>
-            Add Blog
-          </Button>
-         </Link>
+          <Link to="/admin/add-blog">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{ backgroundColor: "#FB923C", borderColor: "#FFA500" }}
+            >
+              Add Blog
+            </Button>
+          </Link>
         </Space>
       </div>
 
       {/* Table */}
       <Table
         columns={columns}
-        dataSource={filteredBlogs}
+        dataSource={allBlogs}
         rowKey="id"
         loading={isLoading}
         pagination={{
-          current: meta?.page || 1,
-          pageSize: meta?.limit || 10,
+          current: meta?.page || pagination.current,
+          pageSize: meta?.limit || pagination.pageSize,
           total: meta?.total || 0,
-          showTotal: (total) => `Showing ${filteredBlogs.length} of ${total}`,
+          showTotal: (total) => `Total ${total} blogs`,
+          showSizeChanger: true,
+          onChange: (page, pageSize) => {
+            setPagination({ current: page, pageSize });
+          },
         }}
         bordered
       />
@@ -341,8 +391,19 @@ const BlogList = () => {
               paddingRight: "24px",
             }}
           >
-            <span style={{ color: "#ff9248", fontSize: "18px", fontWeight: "normal" }}>Edit Blog</span>
-            <CloseOutlined onClick={handleCancel} style={{ color: "#ff9248", fontSize: "16px", cursor: "pointer" }} />
+            <span
+              style={{
+                color: "#ff9248",
+                fontSize: "18px",
+                fontWeight: "normal",
+              }}
+            >
+              Edit Blog
+            </span>
+            <CloseOutlined
+              onClick={handleCancel}
+              style={{ color: "#ff9248", fontSize: "16px", cursor: "pointer" }}
+            />
           </div>
         }
         open={isEditModalVisible}
@@ -359,7 +420,17 @@ const BlogList = () => {
       >
         <Form form={form} layout="vertical" style={{ marginTop: "20px" }}>
           <Form.Item
-            label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Blog Title</span>}
+            label={
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "normal",
+                  color: "#000",
+                }}
+              >
+                Blog Title
+              </span>
+            }
             name="title"
             rules={[{ required: true, message: "Please input blog title!" }]}
             style={{ marginBottom: "24px" }}
@@ -375,7 +446,17 @@ const BlogList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Blog Date</span>}
+            label={
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "normal",
+                  color: "#000",
+                }}
+              >
+                Blog Date
+              </span>
+            }
             name="date"
             rules={[{ required: true, message: "Please select blog date!" }]}
             style={{ marginBottom: "24px" }}
@@ -392,7 +473,17 @@ const BlogList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Blog Image</span>}
+            label={
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "normal",
+                  color: "#000",
+                }}
+              >
+                Blog Image
+              </span>
+            }
             style={{ marginBottom: "24px" }}
           >
             <Upload.Dragger
@@ -405,9 +496,29 @@ const BlogList = () => {
               }}
             >
               <div style={{ textAlign: "center" }}>
-                <UploadOutlined style={{ fontSize: "24px", color: "#666", marginBottom: "8px" }} />
-                <div style={{ fontSize: "16px", color: "#000", marginBottom: "4px" }}>Drop file or browse</div>
-                <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>
+                <UploadOutlined
+                  style={{
+                    fontSize: "24px",
+                    color: "#666",
+                    marginBottom: "8px",
+                  }}
+                />
+                <div
+                  style={{
+                    fontSize: "16px",
+                    color: "#000",
+                    marginBottom: "4px",
+                  }}
+                >
+                  Drop file or browse
+                </div>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#999",
+                    marginBottom: "16px",
+                  }}
+                >
                   Format: .jpeg, .png & Max file size: 25 MB
                 </div>
                 <Button
@@ -442,12 +553,16 @@ const BlogList = () => {
                   <img
                     src={imagePreview || "/placeholder.svg"}
                     alt="preview"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
                   />
                   <CloseOutlined
                     onClick={() => {
-                      setImageFile(null)
-                      setImagePreview(null)
+                      setImageFile(null);
+                      setImagePreview(null);
                     }}
                     style={{
                       position: "absolute",
@@ -467,10 +582,26 @@ const BlogList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Blog Description</span>}
+            label={
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "normal",
+                  color: "#000",
+                }}
+              >
+                Blog Description
+              </span>
+            }
             style={{ marginBottom: "24px" }}
           >
-            <div style={{ border: "1px solid #ff9248", borderRadius: "4px", overflow: "hidden" }}>
+            <div
+              style={{
+                border: "1px solid #ff9248",
+                borderRadius: "4px",
+                overflow: "hidden",
+              }}
+            >
               <JoditEditor
                 value={blogContent}
                 config={joditConfig}
@@ -481,7 +612,17 @@ const BlogList = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontSize: "14px", fontWeight: "normal", color: "#000" }}>Published</span>}
+            label={
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "normal",
+                  color: "#000",
+                }}
+              >
+                Published
+              </span>
+            }
             name="isPublish"
             valuePropName="checked"
             style={{ marginBottom: "40px" }}
@@ -493,7 +634,14 @@ const BlogList = () => {
             />
           </Form.Item>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "40px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "12px",
+              marginTop: "40px",
+            }}
+          >
             <Button
               onClick={handleCancel}
               style={{
@@ -526,7 +674,7 @@ const BlogList = () => {
         </Form>
       </Modal>
     </div>
-  )
-}
+  );
+};
 
-export default BlogList
+export default BlogList;

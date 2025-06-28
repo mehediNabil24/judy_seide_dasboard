@@ -23,6 +23,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SignInPage() {
+  const token = Cookies.get("token");
+  console.log("Token:", token); // Debugging line to check token
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();

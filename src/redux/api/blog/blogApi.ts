@@ -14,13 +14,22 @@ const blogApi = baseApi.injectEndpoints({
     }),
 
     //
-    getAdminBlogs: builder.query({
-      query: ({ page, limit }) => ({
-        url: `/blog/get-all-blogs/admin?page=${page}&limit=${limit}`,
-        method: "GET",
-      }),
-      providesTags: ['Blogs'], // provide blog list tag
-    }),
+getAdminBlogs: builder.query({
+  query: ({ searchTerm, page, limit }) => ({
+    url: '/blog/get-all-blogs/admin',
+    method: 'GET',
+    params: {
+      searchTerm,
+      page: String(page),   // Ensure it's a string
+      limit: String(limit), // Ensure it's a string
+    },
+  }),
+  providesTags: ['Blogs'],
+}),
+
+
+
+ 
 
     // 
     getUserBlog: builder.query({

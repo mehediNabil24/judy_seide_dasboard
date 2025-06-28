@@ -6,13 +6,14 @@ const orderApi = baseApi.injectEndpoints({
 
 
   getAllOrders: builder.query({
-  query: ({ searchTerm = "", page = 1, limit = 10 }) => ({
+  query: ({ searchTerm, page, limit }) => ({
     url: "/order/get-all-orders",
     method: "GET",
     params: {
       searchTerm,
-      page,
-      limit,
+      page:String(page), // Ensure page is a string
+      limit: String(limit), // Ensure limit is a string
+
       
     },
   }),

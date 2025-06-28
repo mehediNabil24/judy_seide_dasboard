@@ -10,69 +10,74 @@ const productApi = baseApi.injectEndpoints({
         method: "POST",
         body: formData, // Form data to be sent
       }),
-      invalidatesTags: ['Products'], 
+      invalidatesTags: ["Products"],
     }),
 
     // Get orders Api
 
     getAllProducts: builder.query({
-        query: ({ searchTerm, status, page = 1, limit = 10, sort = "createdAt" }: { searchTerm?: string; status?: string; page?: number; limit?: number; sort?: string }) => {
-          const params = new URLSearchParams();
-      
-          if (searchTerm) params.append("searchTerm", searchTerm);
-          if (status) params.append("status", status);
-          params.append("page", page.toString());
-          params.append("limit", limit.toString());
-          params.append("sort", sort); // Added sorting by createdAt
-      
-          return {
-            url: `/products/get-all-products/admin?${params.toString()}`,
-            method: "GET",
-          };
+      query: ({ searchTerm, page, limit }) => ({
+        url: "/products/get-all-products/admin",
+        method: "GET",
+        params: {
+          searchTerm,
+          page: String(page), // Ensure page is a string
+          limit: String(limit), // Ensure limit is a string
         },
-        providesTags: ['Products'],
       }),
+      providesTags: ["Products"],
+    }),
 
+    //
+    //
+    // getAllOrders: builder.query({
+    //   query: ({ searchTerm, page, limit }) => ({
+    //     url: "/order/get-all-orders",
+    //     method: "GET",
+    //     params: {
+    //       searchTerm,
+    //       page: String(page), // Ensure page is a string
+    //       limit: String(limit), // Ensure limit is a string
+    //     },
+    //   }),
+    //   providesTags: ["Orders"],
+    // }),
 
-         // Get Single Product API
+    // Get Single Product API
     getSingleProduct: builder.query({
-        query: (id) => ({
-          url: `/products/get-product/${id}`,
-          method: 'GET',
-        }),
-        providesTags: ['Products'], // Invalidate the 'Categories' tag to refetch data
+      query: (id) => ({
+        url: `/products/get-product/${id}`,
+        method: "GET",
       }),
-
-
+      providesTags: ["Products"], // Invalidate the 'Categories' tag to refetch data
+    }),
 
     // Delete Category API
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `/products/delete-product/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Products'], // Invalidate the 'Categories' tag to refetch data
+      invalidatesTags: ["Products"], // Invalidate the 'Categories' tag to refetch data
     }),
 
     // Update Category API (PATCH)
-  updateProduct: builder.mutation({
-  query: ({ id, data }) => ({
-    url: `/products/update-product/${id}`,
-    method: 'PATCH',
-    body: data,
-    
-  }),
-  invalidatesTags: ['Products'],
-}),
+    updateProduct: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/products/update-product/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Products"],
+    }),
   }),
   overrideExisting: false,
-  
 });
 
 export const {
   useAddProductMutation,
-  useGetAllProductsQuery, 
-  useGetSingleProductQuery,// Export the query hook for fetching all orders
+  useGetAllProductsQuery,
+  useGetSingleProductQuery, // Export the query hook for fetching all orders
   useDeleteProductMutation,
   useUpdateProductMutation, // Export the update mutation hook
 } = productApi;

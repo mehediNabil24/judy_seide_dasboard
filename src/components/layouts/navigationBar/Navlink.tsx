@@ -193,12 +193,12 @@ export default function MainNavLink({
 
       {/* Logo Section */}
      
-<Link to="/" className="p-4 min-h-20">
+<Link to="https://judyseide-client.vercel.app/" className="p-4 min-h-20">
   {isShort && (
     <div className="flex items-center gap-2">
       <img
         src={logo}
-        alt="Connex"
+        alt="Bella D'or"
         className="h-32 w-[250px]" // Adjust height/width as needed
       />
     </div>

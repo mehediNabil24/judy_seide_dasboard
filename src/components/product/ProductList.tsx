@@ -56,27 +56,41 @@ interface Product {
 }
 
 const ProductList = () => {
-  const { data, isLoading, refetch } = useGetAllProductsQuery({});
-  // console.log('all product',data);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const { 
+    data, 
+    isLoading, 
+    refetch 
+  } = useGetAllProductsQuery({
+    searchTerm: searchTerm,
+    page: currentPage,
+    limit: pageSize
+  }, {
+    refetchOnMountOrArgChange: true
+  });
+  
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState("");
-
   const allProducts: Product[] = useMemo(() => data?.data?.data || [], [data]);
   const meta = data?.data?.meta;
+  console.log('meta', meta);
 
-  const filteredProducts = useMemo(() => {
-    if (searchTerm.trim()) {
-      return allProducts.filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-    return allProducts;
-  }, [searchTerm, allProducts]);
+  const handleTableChange = (pagination: any) => {
+    setCurrentPage(pagination.current);
+    setPageSize(pagination.pageSize);
+    // refetch(); // Refetch when pagination changes
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+    // refetch(); // Refetch with new search term
+  };
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
@@ -93,6 +107,8 @@ const ProductList = () => {
       try {
         await deleteProduct(id).unwrap();
         Swal.fire("Deleted!", "Product has been deleted.", "success");
+        // Refetch data but maintain current pagination
+        refetch();
       } catch {
         Swal.fire("Error", "Failed to delete product", "error");
       }
@@ -110,6 +126,7 @@ const ProductList = () => {
       }).unwrap();
       
       toast.success("Product status updated successfully!");
+      // Refetch data but maintain current pagination
       refetch();
     } catch (error) {
       toast.error("Failed to update product status");
@@ -187,20 +204,6 @@ const ProductList = () => {
       key: "category",
       render: (category: { categoryName: string }) => category.categoryName,
     },
-    // {
-    //   title: "Tags",
-    //   dataIndex: "tags",
-    //   key: "tags",
-    //   render: (tags: string[]) => (
-    //     <div style={{ maxWidth: 200 }}>
-    //       {tags.map((tag, index) => (
-    //         <Tag key={index} style={{ marginBottom: 4 }}>
-    //           {tag}
-    //         </Tag>
-    //       ))}
-    //     </div>
-    //   ),
-    // },
     {
       title: "Status",
       dataIndex: "published",
@@ -247,7 +250,7 @@ const ProductList = () => {
           prefix={<SearchOutlined />}
           style={{ width: 300, borderColor: "#FFA500" }}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearch}
         />
         <Button
           type="primary"
@@ -261,15 +264,18 @@ const ProductList = () => {
 
       <Table
         columns={columns}
-        dataSource={filteredProducts}
+        dataSource={allProducts}
         rowKey="id"
         loading={isLoading}
         pagination={{
-          current: meta?.page || 1,
-          pageSize: meta?.limit || 10,
+          current: currentPage,
+          pageSize: pageSize,
           total: meta?.total || 0,
           showTotal: (total) => `Total ${total} products`,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
         }}
+        onChange={handleTableChange}
         bordered
         scroll={{ x: true }}
       />

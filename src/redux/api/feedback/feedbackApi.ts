@@ -22,9 +22,14 @@ export const feedbackApi = baseApi.injectEndpoints({
     }),
 
     getAdminFeedback: builder.query({
-      query: () => ({
+      query: ({searchTerm,page,limit}) => ({
         url: `/review/get-all-reviews/admin`,
         method: "GET",
+        params: {
+          searchTerm,
+          page: String(page), // Ensure page is a string
+          limit: String(limit), // Ensure limit is a string
+        },
       }),
       providesTags: ['Feedback'], // Provide the 'Shop' tag for caching
     }),

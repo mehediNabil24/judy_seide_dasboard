@@ -1,42 +1,43 @@
-import  { useEffect, useState } from "react";
+import {  useState } from "react";
 import {
   Table,
   Input,
   Switch,
   Space,
-  
   Typography,
   Rate,
-  
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { useGetAdminFeedbackQuery, useUpdateReviewMutation } from "../../redux/api/feedback/feedbackApi";
 import { toast } from "sonner";
 
-
 const { Text } = Typography;
 
 const ReviewList = () => {
-  const { data, isLoading } = useGetAdminFeedbackQuery({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+
+  const { data, isLoading, refetch } = useGetAdminFeedbackQuery({ 
+    searchTerm, 
+    page: pagination.current, 
+    limit: pagination.pageSize 
+  });
+
   const [updateReview] = useUpdateReviewMutation();
 
   const allReviews = data?.data?.data || [];
   const meta = data?.data?.meta;
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredReviews, setFilteredReviews] = useState(allReviews);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = allReviews.filter((review: any) =>
-        review.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredReviews(filtered);
-    } else {
-      setFilteredReviews(allReviews);
-    }
-  }, [searchTerm, allReviews]);
+  const handleTableChange = (pagination: any) => {
+    setPagination({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
 
   const handleTogglePublish = async (checked: boolean, record: any) => {
     try {
@@ -45,11 +46,17 @@ const ReviewList = () => {
         isPublished: checked,
       }).unwrap();
       toast.success(`Review ${checked ? "published" : "unpublished"} successfully`);
+      refetch(); // Refresh the data after update
     } catch (error) {
       toast.error("Failed to update publish status");
     }
   };
-  
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // Reset to first page when searching
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
 
   const columns = [
     {
@@ -58,7 +65,6 @@ const ReviewList = () => {
       key: "user",
       render: (user: any) => (
         <Space>
-          
           <Text>{user?.name || "N/A"}</Text>
         </Space>
       ),
@@ -113,23 +119,25 @@ const ReviewList = () => {
           prefix={<SearchOutlined />}
           style={{ width: 300, borderColor: "#FB923C" }}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearch}
         />
       </div>
 
       {/* Table */}
       <Table
         columns={columns}
-        dataSource={filteredReviews}
+        dataSource={allReviews}
         rowKey="id"
         loading={isLoading}
         pagination={{
-          current: meta?.page || 1,
-          pageSize: meta?.limit || 10,
+          current: pagination.current,
+          pageSize: pagination.pageSize,
           total: meta?.total || 0,
-          showTotal: (total) =>
-            `Showing ${filteredReviews.length} of ${total}`,
+          showTotal: (total) => `Total ${total} reviews`,
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
         }}
+        onChange={handleTableChange}
         bordered
       />
     </div>

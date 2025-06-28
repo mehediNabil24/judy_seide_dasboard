@@ -9,6 +9,7 @@ interface PrivateRouteProps {
 
 const PrivateRoute = ({ allowedRoles }: PrivateRouteProps) => {
   const token = Cookies.get("token");
+  console.log("Token:", token); // Debugging line to check token
   const user = useSelector((state: any) => state.user.user);
   const location = useLocation();
 

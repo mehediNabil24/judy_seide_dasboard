@@ -10,7 +10,7 @@ import type { NavLink } from "../types";
 import { logout } from "../../../redux/features/user/userSlice";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
-import logo from "../../../assets/logo2.png";
+import logo from "../../../assets/logo3.png";
 
 interface MainNavLinkProps {
   navLink: NavLink[];
@@ -199,7 +199,7 @@ export default function MainNavLink({
       <img
         src={logo}
         alt="Connex"
-        className="h-12 w-auto" // Adjust height/width as needed
+        className="h-32 w-[250px]" // Adjust height/width as needed
       />
     </div>
   )}

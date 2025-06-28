@@ -49,7 +49,7 @@ interface FormValues {
 const AddProductPage: React.FC = () => {
   const [form] = Form.useForm<FormValues>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [, setPreviewImages] = useState<string[]>([]);
   const [colorPickersVisible, setColorPickersVisible] = useState<{ [key: number]: boolean }>({});
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
@@ -231,11 +231,36 @@ const AddProductPage: React.FC = () => {
               <p className="text-gray-500 text-sm">Drop files or click to browse</p>
               <p className="text-gray-400 text-xs">JPG, PNG | Max 25MB each</p>
             </Upload.Dragger>
-            <div className="flex flex-wrap gap-2 mt-4">
+            {/* <div className="flex flex-wrap gap-2 mt-4">
               {previewImages.map((img, idx) => (
                 <img key={idx} src={img} className="w-16 h-16 object-cover border border-yellow-400 rounded" />
               ))}
-            </div>
+            </div> */}
+            <div className="flex flex-wrap gap-2 mt-4">
+  {fileList.map((file, idx) => (
+    <div key={file.uid} className="relative group">
+      <img
+        src={file.url}
+        className="w-16 h-16 object-cover border border-yellow-400 rounded"
+        alt={`preview-${idx}`}
+      />
+      <Button
+        size="small"
+        shape="circle"
+        icon={<DeleteOutlined />}
+        danger
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => {
+          const newFileList = fileList.filter((_, i) => i !== idx);
+          setFileList(newFileList);
+          setPreviewImages(newFileList.map(f => f.url!));
+        }}
+        style={{ transform: 'translate(50%,-50%)', padding: 0 }}
+      />
+    </div>
+  ))}
+</div>
+
           </Form.Item>
 
           <Form.List name="variants">

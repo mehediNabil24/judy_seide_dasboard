@@ -237,7 +237,7 @@ const BlogList = () => {
       key: "title",
       render: (title: string) => <Text strong>{title}</Text>,
     },
-   {
+ {
   title: "Description",
   dataIndex: "content",
   key: "content",
@@ -245,14 +245,17 @@ const BlogList = () => {
     <div
       style={{
         maxWidth: 300,
+        display: "-webkit-box",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
         overflow: "hidden",
         textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
       }}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   ),
 }
+
 ,
     {
       title: "Publish",

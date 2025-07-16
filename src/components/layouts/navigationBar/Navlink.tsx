@@ -193,7 +193,7 @@ export default function MainNavLink({
 
       {/* Logo Section */}
      
-<Link to="https://judyseide-client.vercel.app/" className="p-4 min-h-20">
+<Link to="https://www.belladorjewelry.com" className="p-4 min-h-20">
   {isShort && (
     <div className="flex items-center gap-2">
       <img

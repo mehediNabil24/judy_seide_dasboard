@@ -28,7 +28,7 @@ const AdminProfile: React.FC = () => {
   const { data } = useGetProfileQuery({})
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
 
-  console.log('data', updateProfile)
+  // console.log('data', updateProfile)
 
   const profileData: ProfileData = data?.Data || {
     name: "",

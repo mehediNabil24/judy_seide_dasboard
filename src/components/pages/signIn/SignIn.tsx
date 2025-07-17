@@ -23,8 +23,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function SignInPage() {
-  const token = Cookies.get("token");
-  console.log("Token:", token); // Debugging line to check token
+  // const token = Cookies.get("token");
+  // console.log("Token:", token); // Debugging line to check token
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function SignInPage() {
   const onSubmit = async (data: FormValues) => {
     try {
       const response = await signIn({ email: data.email, password: data.password }).unwrap();
-      console.log('response', response);
+      // console.log('response', response);
       
       if (response) {
         // Save user data and token in Redux

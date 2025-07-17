@@ -8,7 +8,7 @@ import RecentOrderList from "../../recentOrderList/RecentOrderList";
 import AdminChartData from "../../revenueChartData/AdminChartData";
 const AdminDashboard = () => {
     const { data, isLoading, error } = useGetMetricStatsQuery({});
-    console.log('metric Stats Data:', data);
+    // console.log('metric Stats Data:', data);
 
     const metrics = data ? [
         {

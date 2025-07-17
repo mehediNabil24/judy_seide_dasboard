@@ -78,7 +78,7 @@ const ProductList = () => {
 
   const allProducts: Product[] = useMemo(() => data?.data?.data || [], [data]);
   const meta = data?.data?.meta;
-  console.log('meta', meta);
+  // console.log('meta', meta);
 
   const handleTableChange = (pagination: any) => {
     setCurrentPage(pagination.current);
